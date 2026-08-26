@@ -1,0 +1,5 @@
+-r requirements.txt
+Pillow>=11.3.0
+PyInstaller>=6.16.0
+pytest>=8.4.0
+fonttools>=4.60.0
