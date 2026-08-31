@@ -18,10 +18,8 @@ jobs:
         include:
           - os: windows-latest
             name: Windows x64
-          - os: macos-14
-            name: macOS
-          - os: ubuntu-22.04
-            name: Linux x64
+          - os: macos-15
+            name: macOS Apple Silicon
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -32,10 +30,6 @@ jobs:
           python-version: "3.13"
           cache: pip
           cache-dependency-path: requirements-dev.txt
-
-      - name: Install Tk runtime on Linux
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y python3-tk
 
       - name: Install build dependencies
         run: python -m pip install -r requirements-dev.txt
@@ -49,3 +43,34 @@ jobs:
           path: dist/*.zip
           if-no-files-found: error
           compression-level: 0
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: clipify-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Publish release archives
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mapfile -d '' assets < <(find release-assets -maxdepth 1 -type f -name '*.zip' -print0)
+          if (( ${#assets[@]} != 2 )); then
+            echo "Expected two release archives, found ${#assets[@]}" >&2
+            exit 1
+          fi
+          gh release create "$GITHUB_REF_NAME" "${assets[@]}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --title "Clipify $GITHUB_REF_NAME" \
+            --generate-notes

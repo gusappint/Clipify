@@ -2,6 +2,17 @@
 
 A compact cross-platform desktop utility for downloading a full YouTube video or a selected time range. The interface is in Russian and is designed for a portable, no-install workflow.
 
+[Download the latest Windows and macOS builds](https://github.com/gusappint/Clipify/releases/latest)
+
+## Downloads
+
+Ready-to-run ZIP archives are published on the [Releases page](https://github.com/gusappint/Clipify/releases):
+
+- `Clipify-windows-x86_64.zip` — Windows x64.
+- `Clipify-darwin-arm64.zip` — macOS on Apple Silicon.
+
+The macOS build is currently unsigned. On first launch, macOS may require the user to explicitly allow the app in Privacy & Security settings.
+
 ## Features
 
 - A single URL field with clipboard paste.
@@ -16,7 +27,7 @@ A compact cross-platform desktop utility for downloading a full YouTube video or
 - Bundled Roboto typography for consistent rendering on every platform.
 - Failures are surfaced as in-app notifications and written to `clipify.log` next to the app.
 - Bundled `yt-dlp`, EJS solver scripts, FFmpeg, and Deno in release builds.
-- Native portable artifacts for Windows, macOS, and Linux.
+- Native portable artifacts for Windows and macOS.
 
 ## Run from source
 
@@ -51,7 +62,7 @@ The result is written to `dist/` as a native executable/app bundle and a ZIP arc
 
 On macOS, sign/notarize the `.app` for public distribution. On Linux, build on the oldest glibc-based distribution you intend to support.
 
-The included `.github/workflows/build-portable.yml` workflow builds and uploads Windows, macOS, and Linux artifacts automatically on manual dispatch or a `v*` tag.
+The included `.github/workflows/build-portable.yml` workflow builds Windows and macOS artifacts on manual dispatch. A `v*` tag also publishes both ZIP archives as a GitHub Release.
 
 ## Project layout
 
