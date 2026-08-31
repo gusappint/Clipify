@@ -20,6 +20,8 @@ jobs:
             name: Windows x64
           - os: macos-15
             name: macOS Apple Silicon
+          - os: macos-15-intel
+            name: macOS Intel
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -65,8 +67,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mapfile -d '' assets < <(find release-assets -maxdepth 1 -type f -name '*.zip' -print0)
-          if (( ${#assets[@]} != 2 )); then
-            echo "Expected two release archives, found ${#assets[@]}" >&2
+          if (( ${#assets[@]} != 3 )); then
+            echo "Expected three release archives, found ${#assets[@]}" >&2
             exit 1
           fi
           gh release create "$GITHUB_REF_NAME" "${assets[@]}" \
