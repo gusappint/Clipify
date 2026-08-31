@@ -38,8 +38,10 @@ def test_range_must_move_forward() -> None:
 
 def test_format_and_describe() -> None:
     assert format_timecode(3723) == "1:02:03"
-    assert describe_range(None, None) == "Видео целиком"
+    assert describe_range(None, None) == "Full video"
     assert describe_range(90, 120) == "1:30 — 2:00"
+    assert describe_range(None, None, "ru") == "Видео целиком"
+    assert describe_range(90, None, "ru") == "С 1:30 до конца"
 
 
 def test_filename_budget_is_portable(tmp_path) -> None:
@@ -49,5 +51,5 @@ def test_filename_budget_is_portable(tmp_path) -> None:
 
 def test_excessively_long_windows_output_path_is_rejected(tmp_path) -> None:
     long_path = tmp_path.joinpath(*(["x" * 30] * 8))
-    with pytest.raises(ValueError, match="слишком длинный"):
+    with pytest.raises(ValueError, match="error.output_path_too_long"):
         safe_title_budget(long_path, windows=True)

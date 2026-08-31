@@ -2,9 +2,15 @@ from __future__ import annotations
 
 import math
 
+from .i18n import DEFAULT_LOCALE, translate
+
 
 class TimecodeError(ValueError):
     """Raised when a user-facing timecode cannot be parsed."""
+
+    def __init__(self, message_key: str) -> None:
+        self.message_key = message_key
+        super().__init__(message_key)
 
 
 def parse_timecode(value: str | None) -> float | None:
@@ -23,7 +29,7 @@ def parse_timecode(value: str | None) -> float | None:
 
     parts = text.split(":")
     if not 1 <= len(parts) <= 3 or any(not part.strip() for part in parts):
-        raise TimecodeError("Используйте секунды, ММ:СС или ЧЧ:ММ:СС")
+        raise TimecodeError("error.time_format")
 
     try:
         if len(parts) == 1:
@@ -35,12 +41,12 @@ def parse_timecode(value: str | None) -> float | None:
         whole = [int(part) for part in parts[:-1]]
         seconds_part = float(parts[-1])
     except ValueError as exc:
-        raise TimecodeError("Время должно состоять только из чисел и двоеточий") from exc
+        raise TimecodeError("error.time_numbers") from exc
 
     if any(component < 0 for component in whole):
-        raise TimecodeError("Время не может быть отрицательным")
+        raise TimecodeError("error.time_negative")
     if not math.isfinite(seconds_part) or not 0 <= seconds_part < 60:
-        raise TimecodeError("Секунды после двоеточия должны быть от 0 до 59")
+        raise TimecodeError("error.seconds_range")
 
     if len(parts) == 2:
         minutes = whole[0]
@@ -48,13 +54,13 @@ def parse_timecode(value: str | None) -> float | None:
 
     hours, minutes = whole
     if minutes >= 60:
-        raise TimecodeError("Минуты в формате ЧЧ:ММ:СС должны быть от 0 до 59")
+        raise TimecodeError("error.minutes_range")
     return hours * 3600 + minutes * 60 + seconds_part
 
 
 def validate_time_range(start: float | None, end: float | None) -> None:
     if start is not None and end is not None and end <= start:
-        raise TimecodeError("Конец фрагмента должен быть позже начала")
+        raise TimecodeError("error.range_order")
 
 
 def format_timecode(seconds: float | None) -> str:
@@ -74,11 +80,11 @@ def format_timecode(seconds: float | None) -> str:
     return f"{minutes}:{seconds_text}"
 
 
-def describe_range(start: float | None, end: float | None) -> str:
+def describe_range(start: float | None, end: float | None, locale: str = DEFAULT_LOCALE) -> str:
     if start is None and end is None:
-        return "Видео целиком"
+        return translate(locale, "range.full")
     if start is None:
-        return f"С начала до {format_timecode(end)}"
+        return translate(locale, "range.until", end=format_timecode(end))
     if end is None:
-        return f"С {format_timecode(start)} до конца"
-    return f"{format_timecode(start)} — {format_timecode(end)}"
+        return translate(locale, "range.from", start=format_timecode(start))
+    return translate(locale, "range.between", start=format_timecode(start), end=format_timecode(end))
