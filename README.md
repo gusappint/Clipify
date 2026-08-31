@@ -4,7 +4,7 @@ Download a full YouTube video or save only the part you need. Clipify is a compa
 
 **Current version: 1.1.0**
 
-[Download Clipify for Windows or macOS](https://github.com/PanCrucian/Clipify/releases/latest)
+[Download Clipify for Windows or macOS](https://github.com/gusappint/Clipify/releases/latest)
 
 ## How to use it
 
@@ -31,7 +31,7 @@ Choose `Clipify-darwin-arm64.zip` for Apple Silicon or `Clipify-darwin-x86_64.zi
 
 Скачивайте YouTube-видео целиком или сохраняйте только нужный фрагмент. Clipify — компактное portable-приложение для Windows и macOS, которому не нужна установка.
 
-[Скачать Clipify для Windows или macOS](https://github.com/PanCrucian/Clipify/releases/latest)
+[Скачать Clipify для Windows или macOS](https://github.com/gusappint/Clipify/releases/latest)
 
 ### Как скачать видео
 
