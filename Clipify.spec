@@ -5,6 +5,7 @@ import platform
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_all
+from ytclip.version import __version__
 
 
 ROOT = Path(SPECPATH)
@@ -73,6 +74,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=icon,
+    version=str(ROOT / "assets" / "version_info.txt") if platform.system() == "Windows" else None,
 )
 
 if platform.system() == "Darwin":
@@ -84,5 +86,7 @@ if platform.system() == "Darwin":
         info_plist={
             "NSHighResolutionCapable": True,
             "LSMinimumSystemVersion": "11.0",
+            "CFBundleShortVersionString": __version__,
+            "CFBundleVersion": __version__,
         },
     )

@@ -1,34 +1,48 @@
 # Clipify
 
-A compact cross-platform desktop utility for downloading a full YouTube video or a selected time range. The interface is available in English and Russian and is designed for a portable, no-install workflow.
+Download a full YouTube video or save only the part you need. Clipify is a compact, portable desktop app for Windows and macOS. No installation or separate runtime setup is required.
 
-[Download the latest Windows and macOS builds](https://github.com/gusappint/Clipify/releases/latest)
+**Current version: 1.0.0**
 
-## Downloads
+[Download Clipify for Windows or macOS](https://github.com/PanCrucian/Clipify/releases/latest)
 
-Ready-to-run ZIP archives are published on the [Releases page](https://github.com/gusappint/Clipify/releases):
+## How to use it
 
-- `Clipify-windows-x86_64.zip` — Windows x64.
-- `Clipify-darwin-arm64.zip` — macOS on Apple Silicon.
+1. Paste a YouTube link.
+2. Add a start or end time if you want a clip.
+3. Choose a folder, or leave it blank to save beside Clipify.
+4. Select **Download video**.
 
-The macOS build is currently unsigned. On first launch, macOS may require the user to explicitly allow the app in Privacy & Security settings.
+Enter time as seconds, `MM:SS`, or `HH:MM:SS`. Turn on **Frame-accurate trim** when the exact first and last frames matter.
 
-## Features
+## What Clipify handles for you
 
-- A single URL field with clipboard paste.
-- English and Russian interface; English is selected on first launch.
-- Optional start and end boundaries in seconds, `MM:SS`, or `HH:MM:SS`.
-- Start-only and end-only ranges.
-- Optional frame-accurate cuts through FFmpeg re-encoding.
-- Optional output folder; blank means next to the application.
-- Portable filename sanitization: forbidden characters and reserved Windows names are replaced, Unicode is preserved, and title/path lengths are capped safely.
-- Existing files are never replaced; repeated downloads receive ` (2)`, ` (3)`, and so on.
-- Progress, speed, ETA, cancellation, and quick access to the output folder.
-- Automatic light/dark appearance based on the operating-system setting.
-- Bundled Roboto typography for consistent rendering on every platform.
-- Failures are surfaced as in-app notifications and written to `clipify.log` next to the app.
-- Bundled `yt-dlp`, EJS solver scripts, FFmpeg, and Deno in release builds.
-- Native portable artifacts for Windows and macOS.
+- Downloads complete videos or open-ended and fixed-length clips.
+- Starts in English and switches between English and Russian in one click.
+- Matches the system light or dark theme.
+- Shows progress, speed, remaining time, and a cancel action.
+- Keeps existing files and numbers new copies automatically.
+- Cleans unsafe file-name characters and limits long paths.
+- Records technical failures in `clipify.log` and shows a clear next step in the app.
+
+Release packages include the required download and media components. The macOS build is unsigned, so the first launch may need approval in **System Settings → Privacy & Security**.
+
+## Русский
+
+Скачивайте YouTube-видео целиком или сохраняйте только нужный фрагмент. Clipify — компактное portable-приложение для Windows и macOS, которому не нужна установка.
+
+[Скачать Clipify для Windows или macOS](https://github.com/PanCrucian/Clipify/releases/latest)
+
+### Как скачать видео
+
+1. Вставьте ссылку на YouTube.
+2. При необходимости укажите начало или конец фрагмента.
+3. Выберите папку или оставьте поле пустым, чтобы сохранить рядом с Clipify.
+4. Нажмите **Скачать видео**.
+
+Время можно указать в секундах, формате `ММ:СС` или `ЧЧ:ММ:СС`. Включите **Точные границы кадра**, если важны точные начало и конец фрагмента.
+
+Clipify поддерживает светлую и тёмную темы, не заменяет существующие файлы, обезопасит имя файла и сохранит подробности сбоя в `clipify.log`.
 
 ## Run from source
 
@@ -42,38 +56,26 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-During development, Deno can be in `PATH`, inside `tools/`, next to the app, or explicitly at `%USERPROFILE%\deno.exe` on Windows.
+During development, Deno can be in `PATH`, in `tools/`, beside the app, or at `%USERPROFILE%\deno.exe` on Windows.
 
-## Test
+## Test and build
 
 ```bash
 python -m pytest
-```
-
-## Build a portable artifact
-
-Build on each target operating system; PyInstaller does not cross-compile native GUI applications.
-
-```bash
 python -m pip install -r requirements-dev.txt
 python scripts/build.py --fetch-deno
 ```
 
-The result is written to `dist/` as a native executable/app bundle and a ZIP archive. The app itself embeds all runtime dependencies and does not require a Python installation.
-
-On macOS, sign/notarize the `.app` for public distribution. On Linux, build on the oldest glibc-based distribution you intend to support.
-
-The included `.github/workflows/build-portable.yml` workflow builds Windows and macOS artifacts on manual dispatch. A `v*` tag also publishes both ZIP archives as a GitHub Release.
+PyInstaller builds native applications, so run the build on each target operating system. The GitHub Actions workflow builds Windows x64 and macOS Apple Silicon packages. Pushing a `v*` tag publishes both ZIP files as a GitHub Release.
 
 ## Project layout
 
-- `main.py` — GUI/worker entry point.
-- `ytclip/ui.py` — interface and process lifecycle.
+- `main.py` — app entry point.
+- `ytclip/ui.py` — interface and download lifecycle.
 - `ytclip/i18n.py` — English and Russian interface copy.
-- `ytclip/worker.py` — isolated yt-dlp worker.
+- `ytclip/worker.py` — isolated download worker.
 - `ytclip/timecode.py` — time parsing and validation.
-- `scripts/build.py` — reproducible native build and ZIP packaging.
-- `scripts/fetch_deno.py` — platform-aware Deno downloader.
-- `scripts/fetch_bootstrap_icons.py` — pinned Bootstrap Icons asset fetcher.
-- `.github/workflows/build-portable.yml` — native three-OS build matrix.
-- `.agent/skills/` — project-local UX writing and visual-polish skills.
+- `ytclip/version.py` — current application version.
+- `scripts/build.py` — native build and ZIP packaging.
+- `.github/workflows/build-portable.yml` — Windows and macOS release builds.
+- `.agent/skills/` — project-local UX writing and design-polish skills.
