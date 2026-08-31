@@ -25,6 +25,12 @@ _event_lock = threading.Lock()
 LOGGER = get_logger("worker")
 
 
+class WorkerUserError(ValueError):
+    def __init__(self, message_key: str) -> None:
+        self.message_key = message_key
+        super().__init__(message_key)
+
+
 def emit(event: str, **payload: Any) -> None:
     message = {"event": event, **payload}
     line = f"{EVENT_PREFIX}{json.dumps(message, ensure_ascii=False)}\n"
@@ -57,8 +63,8 @@ def _human_bytes(value: float | int | None) -> str:
     if value is None:
         return ""
     size = float(value)
-    for unit in ("Б", "КиБ", "МиБ", "ГиБ"):
-        if abs(size) < 1024 or unit == "ГиБ":
+    for unit in ("B", "KiB", "MiB", "GiB"):
+        if abs(size) < 1024 or unit == "GiB":
             return f"{size:.1f} {unit}"
         size /= 1024
     return ""
@@ -68,11 +74,11 @@ class WorkerLogger:
     def debug(self, message: str) -> None:
         LOGGER.debug("Внутренняя утилита: %s", message)
         if message.startswith("[youtube]"):
-            emit("status", text="Получаем информацию о видео…")
+            emit("status", key="status.fetching_info")
         elif message.startswith("[Merger]"):
-            emit("status", text="Объединяем видео и звук…")
+            emit("status", key="status.merging_video_audio")
         elif message.startswith("[download] Destination"):
-            emit("status", text="Начинаем загрузку…")
+            emit("status", key="status.starting_download")
 
     def info(self, message: str) -> None:
         self.debug(message)
@@ -95,18 +101,18 @@ def _progress_hook(data: dict[str, Any]) -> None:
         emit(
             "progress",
             percent=percent,
-            speed=_human_bytes(_safe_float(data.get("speed"))) + "/с" if data.get("speed") else "",
+            speed=_human_bytes(_safe_float(data.get("speed"))) + "/s" if data.get("speed") else "",
             eta=_safe_float(data.get("eta")),
             downloaded=_human_bytes(downloaded),
             total=_human_bytes(total),
         )
     elif status == "finished":
-        emit("status", text="Загрузка завершена, обрабатываем файл…")
+        emit("status", key="status.processing_file")
 
 
 def _postprocessor_hook(data: dict[str, Any]) -> None:
     if data.get("status") == "started":
-        emit("status", text="Объединяем дорожки…")
+        emit("status", key="status.merging_tracks")
 
 
 def _find_result(output_dir: Path, video_id: str | None, started_at: float) -> Path | None:
@@ -173,7 +179,7 @@ def safe_title_budget(output_dir: Path, *, windows: bool | None = None) -> int:
     fixed_name_overhead = 48  # ID, extension, private job marker and numeric suffix margin
     available = 240 - directory_length - fixed_name_overhead
     if available < 40:
-        raise ValueError("Путь к папке слишком длинный. Выберите папку с более коротким адресом")
+        raise WorkerUserError("error.output_path_too_long")
     return min(160, available)
 
 
@@ -241,9 +247,9 @@ def worker_main(argv: list[str]) -> int:
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
         LOGGER.info("Запущен загрузчик; папка: %s", output_dir)
-        emit("status", text="Проверяем инструменты…")
+        emit("status", key="status.checking_tools")
         options = build_options(args, job_token)
-        emit("status", text="Получаем информацию о видео…")
+        emit("status", key="status.fetching_info")
         with YoutubeDL(options) as ydl:
             info = ydl.extract_info(args.url, download=True)
 
@@ -257,12 +263,19 @@ def worker_main(argv: list[str]) -> int:
     except DownloadError as exc:
         LOGGER.exception("Ошибка загрузки или сети")
         emit("error", text=str(exc).removeprefix("ERROR: "))
+    except WorkerUserError as exc:
+        LOGGER.exception("Ошибка параметров загрузчика")
+        emit("error", key=exc.message_key)
+    except FileNotFoundError as exc:
+        LOGGER.exception("Компонент загрузчика не найден")
+        key = "error.ffmpeg_missing" if "FFmpeg" in str(exc) else "error.download"
+        emit("error", key=key)
     except (OSError, ValueError) as exc:
         LOGGER.exception("Системная ошибка загрузчика")
         emit("error", text=str(exc))
     except Exception as exc:  # noqa: BLE001 - worker must report unexpected failures to the GUI
         LOGGER.exception("Неожиданная ошибка загрузчика")
-        emit("error", text=f"Неожиданная ошибка: {exc}")
+        emit("error", key="error.unexpected_worker", error=str(exc))
     return 1
 
 

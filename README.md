@@ -1,6 +1,6 @@
 # Clipify
 
-A compact cross-platform desktop utility for downloading a full YouTube video or a selected time range. The interface is in Russian and is designed for a portable, no-install workflow.
+A compact cross-platform desktop utility for downloading a full YouTube video or a selected time range. The interface is available in English and Russian and is designed for a portable, no-install workflow.
 
 [Download the latest Windows and macOS builds](https://github.com/gusappint/Clipify/releases/latest)
 
@@ -16,6 +16,7 @@ The macOS build is currently unsigned. On first launch, macOS may require the us
 ## Features
 
 - A single URL field with clipboard paste.
+- English and Russian interface; English is selected on first launch.
 - Optional start and end boundaries in seconds, `MM:SS`, or `HH:MM:SS`.
 - Start-only and end-only ranges.
 - Optional frame-accurate cuts through FFmpeg re-encoding.
@@ -68,9 +69,11 @@ The included `.github/workflows/build-portable.yml` workflow builds Windows and 
 
 - `main.py` — GUI/worker entry point.
 - `ytclip/ui.py` — interface and process lifecycle.
+- `ytclip/i18n.py` — English and Russian interface copy.
 - `ytclip/worker.py` — isolated yt-dlp worker.
 - `ytclip/timecode.py` — time parsing and validation.
 - `scripts/build.py` — reproducible native build and ZIP packaging.
 - `scripts/fetch_deno.py` — platform-aware Deno downloader.
 - `scripts/fetch_bootstrap_icons.py` — pinned Bootstrap Icons asset fetcher.
 - `.github/workflows/build-portable.yml` — native three-OS build matrix.
+- `.agent/skills/` — project-local UX writing and visual-polish skills.

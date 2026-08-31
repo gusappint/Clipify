@@ -20,6 +20,7 @@ import customtkinter as ctk
 from PIL import Image
 
 from .font_loader import FONT_FAMILY, register_bundled_font
+from .i18n import DEFAULT_LOCALE, SUPPORTED_LOCALES, translate
 from .logging_utils import LOG_FILENAME, get_logger
 from .platform_tools import portable_root, resource_root, worker_command
 from .timecode import TimecodeError, describe_range, format_timecode, parse_timecode, validate_time_range
@@ -28,8 +29,8 @@ from .worker import EVENT_PREFIX
 
 LOGGER = get_logger("ui")
 COMPACT_WIDTH = 615
-COMPACT_HEIGHT = 500
-PROGRESS_HEIGHT = 565
+COMPACT_HEIGHT = 514
+PROGRESS_HEIGHT = 579
 
 
 def toast_duration_ms(text: str) -> int:
@@ -60,14 +61,18 @@ COLORS = {
     "surface": ("#FFFFFF", "#121A2E"),
     "surface_alt": ("#F7F8FC", "#0F1729"),
     "surface_hover": ("#EEF1F7", "#19243D"),
+    "surface_pressed": ("#E4E8F1", "#22304D"),
     "border": ("#DCE2EE", "#263451"),
+    "focus": ("#6948F5", "#9A84FF"),
     "text": ("#172033", "#F5F7FF"),
     "muted": ("#69758C", "#9AA7C2"),
-    "subtle": ("#8A94A7", "#6F7C98"),
+    "subtle": ("#667288", "#7D8BAA"),
     "accent": ("#6948F5", "#7C5CFC"),
     "accent_hover": ("#5938E3", "#9278FF"),
     "accent_soft": ("#EEEAFE", "#211D45"),
     "accent_text": ("#5A3BDC", "#C9BDFF"),
+    "disabled": ("#E8EBF2", "#202A40"),
+    "disabled_text": ("#5F6B80", "#8997B5"),
     "progress_track": ("#E6E9F1", "#202A43"),
     "success": ("#0F9B75", "#2DD4A4"),
     "success_soft": ("#E3F7F1", "#123A35"),
@@ -99,22 +104,32 @@ class ClipifyApp(ctk.CTk):
         self._toast_after: str | None = None
         self._auto_expanded = False
         self._images: dict[str, ctk.CTkImage] = {}
+        self.locale = DEFAULT_LOCALE
+        self._status_key: str | None = "status.preparing"
+        self._status_values: dict[str, object] = {}
+        self._meta_key: str | None = None
+        self._meta_values: dict[str, object] = {}
+        self._active_range: tuple[float | None, float | None] | None = None
 
         self.url_var = tk.StringVar()
         self.start_var = tk.StringVar()
         self.end_var = tk.StringVar()
         self.output_var = tk.StringVar()
         self.exact_var = tk.BooleanVar(value=False)
+        self.language_var = tk.StringVar(value=DEFAULT_LOCALE.upper())
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self._set_icon()
         self._load_images()
         self._build_ui()
+        self._refresh_copy()
         self.url_var.trace_add("write", self._sync_primary_download_state)
         self._sync_primary_download_state()
         self._install_thread_exception_handler()
         LOGGER.info("Clipify запущен; журнал: %s", portable_root() / LOG_FILENAME)
+        self.bind("<Control-l>", lambda _event: self.url_entry.focus_set())
+        self.bind("<Return>", self._download_from_keyboard)
         self.after(100, self._poll_events)
 
     def _set_icon(self) -> None:
@@ -187,29 +202,49 @@ class ClipifyApp(ctk.CTk):
             width=56,
             height=56,
         ).grid(row=0, column=0, rowspan=2, padx=(0, 14))
-        ctk.CTkLabel(
+        self.brand_label = ctk.CTkLabel(
             header,
             text="Clipify by PanCrucian",
             anchor="w",
             text_color=COLORS["text"],
             font=ctk.CTkFont(size=26, weight="bold"),
-        ).grid(row=0, column=1, columnspan=2, sticky="sw")
-        ctk.CTkLabel(
+        )
+        self.brand_label.grid(row=0, column=1, sticky="sw")
+        self.tagline_label = ctk.CTkLabel(
             header,
-            text="Скачивайте YouTube видео целиком или фрагментом",
+            text="",
             anchor="w",
             text_color=COLORS["muted"],
             font=ctk.CTkFont(size=13),
-        ).grid(row=1, column=1, sticky="nw", pady=(0, 2))
-        copyright_label = ctk.CTkLabel(
+        )
+        self.tagline_label.grid(row=1, column=1, sticky="nw", pady=(0, 2))
+        self.language_switch = ctk.CTkSegmentedButton(
+            header,
+            values=[locale.upper() for locale in SUPPORTED_LOCALES],
+            variable=self.language_var,
+            command=self._change_locale,
+            width=82,
+            height=28,
+            corner_radius=9,
+            border_width=1,
+            fg_color=COLORS["surface_alt"],
+            selected_color=COLORS["accent"],
+            selected_hover_color=COLORS["accent_hover"],
+            unselected_color=("#5C687D", "#46536E"),
+            unselected_hover_color=("#4F5B6F", "#53617E"),
+            text_color=("#FFFFFF", "#FFFFFF"),
+            font=ctk.CTkFont(size=10, weight="bold"),
+        )
+        self.language_switch.grid(row=0, column=2, sticky="ne", pady=(1, 0))
+        self.copyright_label = ctk.CTkLabel(
             header,
             text="©PanCrucian",
             anchor="e",
             text_color=COLORS["accent_text"],
             font=ctk.CTkFont(size=12, underline=True),
         )
-        copyright_label.grid(row=1, column=2, sticky="ne", pady=(0, 2))
-        copyright_label.bind("<Button-1>", self._open_author_link)
+        self.copyright_label.grid(row=1, column=2, sticky="ne", pady=(0, 2))
+        self.copyright_label.bind("<Button-1>", self._open_author_link)
 
     def _build_form(self, parent: ctk.CTkFrame) -> None:
         card = ctk.CTkFrame(
@@ -226,15 +261,15 @@ class ClipifyApp(ctk.CTk):
         content.grid(row=0, column=0, sticky="ew", padx=22, pady=20)
         content.grid_columnconfigure(0, weight=1)
 
-        self._field_label(content, "Ссылка на YouTube", row=0)
+        self.url_label = self._field_label(content, "", row=0)
         url_row = ctk.CTkFrame(content, fg_color="transparent")
         url_row.grid(row=1, column=0, sticky="ew", pady=(7, 18))
         url_row.grid_columnconfigure(0, weight=1)
-        self.url_entry = self._entry(url_row, self.url_var, "https://youtube.com/watch?v=…")
+        self.url_entry = self._entry(url_row, self.url_var, "")
         self.url_entry.grid(row=0, column=0, sticky="ew", padx=(0, 8))
         self.paste_button = ctk.CTkButton(
             url_row,
-            text="Вставить",
+            text="",
             width=90,
             height=42,
             corner_radius=12,
@@ -248,40 +283,43 @@ class ClipifyApp(ctk.CTk):
 
         optional_header = ctk.CTkFrame(content, fg_color="transparent")
         optional_header.grid(row=2, column=0, sticky="ew")
-        self._field_label(optional_header, "Опциональные параметры", row=0)
+        self.optional_label = self._field_label(optional_header, "", row=0)
 
         optional_row = ctk.CTkFrame(content, fg_color="transparent")
-        optional_row.grid(row=3, column=0, sticky="ew", pady=(7, 18))
-        optional_row.grid_columnconfigure(3, weight=1)
+        optional_row.grid(row=3, column=0, sticky="ew", pady=(7, 16))
+        optional_row.grid_columnconfigure(1, weight=1)
 
-        start_group = self._compact_field(optional_row, "Начало", column=0)
-        self.start_entry = self._entry(start_group, self.start_var, "0:00", width=112)
+        time_group = ctk.CTkFrame(optional_row, fg_color="transparent")
+        time_group.grid(row=0, column=0, sticky="w")
+
+        start_group, self.start_label = self._compact_field(time_group, "", column=0)
+        self.start_entry = self._entry(start_group, self.start_var, "0:00", width=104)
         self.start_entry.grid(row=1, column=0)
         ctk.CTkLabel(
-            optional_row,
+            time_group,
             text="→",
             width=28,
             text_color=COLORS["subtle"],
             font=ctk.CTkFont(size=17),
         ).grid(row=0, column=1, sticky="s", pady=(0, 8))
-        end_group = self._compact_field(optional_row, "Конец", column=2)
-        self.end_entry = self._entry(end_group, self.end_var, "1:30", width=112)
+        end_group, self.end_label = self._compact_field(time_group, "", column=2)
+        self.end_entry = self._entry(end_group, self.end_var, "1:30", width=104)
         self.end_entry.grid(row=1, column=0)
-        self.start_entry.bind("<FocusOut>", lambda _event: self._normalize_time(self.start_var))
-        self.end_entry.bind("<FocusOut>", lambda _event: self._normalize_time(self.end_var))
+        self.start_entry.bind("<FocusOut>", lambda _event: self._normalize_time(self.start_var), add="+")
+        self.end_entry.bind("<FocusOut>", lambda _event: self._normalize_time(self.end_var), add="+")
         self.range_hint = ctk.CTkLabel(
-            optional_row,
-            text="Форматы: секунды или часы:минуты:секунды",
+            time_group,
+            text="",
             anchor="w",
-            height=16,
+            height=18,
             text_color=COLORS["subtle"],
             font=ctk.CTkFont(size=10),
         )
-        self.range_hint.grid(row=1, column=0, columnspan=3, sticky="w", pady=(4, 0))
+        self.range_hint.grid(row=1, column=0, columnspan=3, sticky="w", pady=(5, 0))
 
-        output_group = self._compact_field(optional_row, "Папка сохранения", column=3, padx=(14, 14))
+        output_group, self.output_label = self._compact_field(optional_row, "", column=1, padx=(16, 0))
         output_group.grid_columnconfigure(0, weight=1)
-        self.output_entry = self._entry(output_group, self.output_var, "Выберите папку")
+        self.output_entry = self._entry(output_group, self.output_var, "")
         self.output_entry.grid(row=1, column=0, sticky="ew", padx=(0, 8))
         self.folder_button = ctk.CTkButton(
             output_group,
@@ -300,7 +338,7 @@ class ClipifyApp(ctk.CTk):
         exact_group.grid(row=4, column=0, sticky="w", pady=(0, 18))
         self.exact_switch = ctk.CTkSwitch(
             exact_group,
-            text="Точные границы кадра",
+            text="",
             variable=self.exact_var,
             onvalue=True,
             offvalue=False,
@@ -330,7 +368,7 @@ class ClipifyApp(ctk.CTk):
 
         self.download_button = ctk.CTkButton(
             self.action_host,
-            text="Скачать видео",
+            text="",
             image=self._images.get("download"),
             compound="left",
             height=50,
@@ -338,6 +376,7 @@ class ClipifyApp(ctk.CTk):
             fg_color=COLORS["accent"],
             hover_color=COLORS["accent_hover"],
             text_color="white",
+            text_color_disabled=COLORS["disabled_text"],
             font=ctk.CTkFont(size=15, weight="bold"),
             command=self._start_download,
         )
@@ -360,7 +399,7 @@ class ClipifyApp(ctk.CTk):
         top.grid_columnconfigure(0, weight=1)
         self.status_label = ctk.CTkLabel(
             top,
-            text="Готов к загрузке",
+            text="",
             anchor="w",
             text_color=COLORS["text"],
             font=ctk.CTkFont(size=13, weight="bold"),
@@ -398,7 +437,7 @@ class ClipifyApp(ctk.CTk):
 
         self.cancel_button = ctk.CTkButton(
             lower,
-            text="Отмена",
+            text="",
             width=74,
             height=30,
             corner_radius=9,
@@ -425,7 +464,7 @@ class ClipifyApp(ctk.CTk):
 
         self.new_download_button = ctk.CTkButton(
             lower,
-            text="Скачать ещё видео",
+            text="",
             image=self._images.get("download"),
             compound="left",
             width=158,
@@ -443,7 +482,7 @@ class ClipifyApp(ctk.CTk):
             text="",
             anchor="w",
             justify="left",
-            wraplength=780,
+            wraplength=480,
             text_color=COLORS["warning"],
             font=ctk.CTkFont(size=10),
         )
@@ -456,18 +495,19 @@ class ClipifyApp(ctk.CTk):
         *,
         column: int,
         padx: tuple[int, int] = (0, 0),
-    ) -> ctk.CTkFrame:
+    ) -> tuple[ctk.CTkFrame, ctk.CTkLabel]:
         group = ctk.CTkFrame(parent, fg_color="transparent")
         group.grid(row=0, column=column, sticky="ew", padx=padx)
-        ctk.CTkLabel(
+        label = ctk.CTkLabel(
             group,
             text=label_text,
             anchor="w",
             height=18,
             text_color=COLORS["subtle"],
             font=ctk.CTkFont(size=10),
-        ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 3))
-        return group
+        )
+        label.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 4))
+        return group, label
 
     def _build_toast(self) -> None:
         self._toast_frame = ctk.CTkFrame(
@@ -511,7 +551,7 @@ class ClipifyApp(ctk.CTk):
         options: dict[str, object] = {}
         if width is not None:
             options["width"] = width
-        return ctk.CTkEntry(
+        entry = ctk.CTkEntry(
             parent,
             textvariable=variable,
             placeholder_text=placeholder,
@@ -525,6 +565,72 @@ class ClipifyApp(ctk.CTk):
             font=ctk.CTkFont(size=12),
             **options,
         )
+        entry.bind("<FocusIn>", lambda _event, widget=entry: widget.configure(border_color=COLORS["focus"]))
+        entry.bind("<FocusOut>", lambda _event, widget=entry: widget.configure(border_color=COLORS["border"]))
+        return entry
+
+    def _tr(self, key: str, **values: object) -> str:
+        return translate(self.locale, key, **values)
+
+    def _change_locale(self, selection: str) -> None:
+        locale = selection.lower()
+        if locale not in SUPPORTED_LOCALES or locale == self.locale:
+            return
+        self.locale = locale
+        self._refresh_copy()
+        LOGGER.info("Язык интерфейса изменён: %s", locale)
+
+    def _refresh_copy(self) -> None:
+        self.tagline_label.configure(text=self._tr("tagline"))
+        self.url_label.configure(text=self._tr("url.label"))
+        self.url_entry.configure(placeholder_text=self._tr("url.placeholder"))
+        self.paste_button.configure(text=self._tr("action.paste"))
+        self.optional_label.configure(text=self._tr("optional.label"))
+        self.start_label.configure(text=self._tr("range.start"))
+        self.end_label.configure(text=self._tr("range.end"))
+        self.range_hint.configure(text=self._tr("range.hint"))
+        self.output_label.configure(text=self._tr("output.label"))
+        self.output_entry.configure(placeholder_text=self._tr("output.placeholder"))
+        self.exact_switch.configure(text=self._tr("exact.label"))
+        self.download_button.configure(text=self._tr("action.download"))
+        self.cancel_button.configure(text=self._tr("action.cancel"))
+        self.new_download_button.configure(text=self._tr("action.download_another"))
+        if self._status_key:
+            self.status_label.configure(text=self._tr(self._status_key, **self._status_values))
+        if self._meta_key == "range" and self._active_range is not None:
+            self.meta_label.configure(text=describe_range(*self._active_range, locale=self.locale))
+        elif self._meta_key:
+            self.meta_label.configure(text=self._tr(self._meta_key, **self._meta_values))
+
+    def _set_status_key(self, key: str, *, color: object | None = None, **values: object) -> None:
+        self._status_key = key
+        self._status_values = values
+        self.status_label.configure(text=self._tr(key, **values), text_color=color or COLORS["text"])
+
+    def _set_meta_key(self, key: str, **values: object) -> None:
+        self._meta_key = key
+        self._meta_values = values
+        self.meta_label.configure(text=self._tr(key, **values))
+
+    def _set_meta_text(self, text: str) -> None:
+        self._meta_key = None
+        self._meta_values = {}
+        self.meta_label.configure(text=text)
+
+    def _event_text(self, event: dict[str, object], fallback_key: str) -> str:
+        key = event.get("key")
+        if isinstance(key, str) and key:
+            values = {name: value for name, value in event.items() if name not in {"event", "key"}}
+            return self._tr(key, **values)
+        text = str(event.get("text") or "").strip()
+        if text:
+            return text
+        values = {"log": LOG_FILENAME} if fallback_key == "error.system" else {}
+        return self._tr(fallback_key, **values)
+
+    def _download_from_keyboard(self, _event: object | None = None) -> None:
+        if self.download_button.cget("state") == "normal" and self.download_button.winfo_ismapped():
+            self._start_download()
 
     def _install_thread_exception_handler(self) -> None:
         def handle_thread_exception(args: threading.ExceptHookArgs) -> None:
@@ -536,7 +642,8 @@ class ClipifyApp(ctk.CTk):
             self.events.put(
                 {
                     "event": "ui_exception",
-                    "text": f"Системная ошибка. Подробности записаны в {LOG_FILENAME}",
+                    "key": "error.system",
+                    "log": LOG_FILENAME,
                 }
             )
 
@@ -544,7 +651,7 @@ class ClipifyApp(ctk.CTk):
 
     def _report_callback_exception(self, exc_type: type[BaseException], exc: BaseException, trace: object) -> None:
         LOGGER.error("Ошибка обработчика интерфейса", exc_info=(exc_type, exc, trace))
-        self._toast(f"Системная ошибка. Подробности записаны в {LOG_FILENAME}", "danger")
+        self._toast(self._tr("error.system", log=LOG_FILENAME), "danger")
 
     def _toast(self, text: str, tone: str = "accent") -> None:
         if self._toast_after is not None:
@@ -579,22 +686,19 @@ class ClipifyApp(ctk.CTk):
     def _open_author_link(self, _event: object | None = None) -> None:
         try:
             if not webbrowser.open("https://t.me/PanCrucian"):
-                raise OSError("браузер не принял ссылку")
+                raise OSError("browser rejected the link")
         except Exception as exc:  # noqa: BLE001 - system browser errors vary by platform
             LOGGER.exception("Не удалось открыть ссылку автора")
-            self._toast(f"Не удалось открыть ссылку: {exc}", "danger")
+            self._toast(self._tr("error.open_author", error=exc), "danger")
 
     def _show_exact_help(self) -> None:
-        self._toast(
-            "Точные границы создают фрагмент ровно по указанному времени, но обработка займёт больше времени.",
-            "accent",
-        )
+        self._toast(self._tr("toast.exact_help"), "accent")
 
     def _paste_url(self) -> None:
         try:
             value = self.clipboard_get().strip()
         except tk.TclError:
-            self._toast("Буфер обмена пуст", "warning")
+            self._toast(self._tr("toast.clipboard_empty"), "warning")
             return
         self.url_var.set(value)
         self.url_entry.focus_set()
@@ -603,10 +707,14 @@ class ClipifyApp(ctk.CTk):
     def _choose_output(self) -> None:
         initial = self.output_var.get().strip() or str(portable_root())
         try:
-            selected = filedialog.askdirectory(parent=self, initialdir=initial, title="Куда сохранить видео")
+            selected = filedialog.askdirectory(
+                parent=self,
+                initialdir=initial,
+                title=self._tr("dialog.choose_folder"),
+            )
         except (OSError, tk.TclError) as exc:
             LOGGER.exception("Не удалось открыть выбор папки")
-            self._toast(f"Не удалось выбрать папку: {exc}", "danger")
+            self._toast(self._tr("error.choose_folder", error=exc), "danger")
             return
         if selected:
             self.output_var.set(selected)
@@ -626,13 +734,13 @@ class ClipifyApp(ctk.CTk):
         try:
             parsed = urlparse(text)
         except ValueError as exc:
-            raise ValueError("Проверьте ссылку на видео") from exc
+            raise ValueError("error.invalid_url") from exc
         host = (parsed.hostname or "").lower()
         allowed = host == "youtu.be" or host.endswith(".youtu.be") or host == "youtube.com" or host.endswith(
             ".youtube.com"
         )
         if parsed.scheme not in {"http", "https"} or not allowed:
-            raise ValueError("Нужна ссылка на youtube.com или youtu.be")
+            raise ValueError("error.youtube_url")
         return text
 
     def _start_download(self) -> None:
@@ -644,9 +752,14 @@ class ClipifyApp(ctk.CTk):
             start = parse_timecode(self.start_var.get())
             end = parse_timecode(self.end_var.get())
             validate_time_range(start, end)
-        except (ValueError, TimecodeError) as exc:
+        except TimecodeError as exc:
             LOGGER.info("Проверка параметров не пройдена: %s", exc)
-            self._toast(str(exc), "warning")
+            self._toast(self._tr(exc.message_key), "warning")
+            return
+        except ValueError as exc:
+            LOGGER.info("Проверка параметров не пройдена: %s", exc)
+            key = str(exc)
+            self._toast(self._tr(key) if key.startswith("error.") else key, "warning")
             return
 
         output = Path(self.output_var.get().strip()).expanduser() if self.output_var.get().strip() else portable_root()
@@ -688,17 +801,21 @@ class ClipifyApp(ctk.CTk):
             if self.event_file is not None:
                 self.event_file.unlink(missing_ok=True)
             self.event_file = None
-            self._toast(f"Не удалось запустить загрузку: {exc}", "danger")
+            self._toast(self._tr("error.start_download", error=exc), "danger")
             return
 
-        LOGGER.info("Запущена загрузка в %s; диапазон: %s", output, describe_range(start, end))
+        LOGGER.info("Запущена загрузка в %s; диапазон: %s", output, describe_range(start, end, self.locale))
         self.had_worker_error = False
         self.cancelled = False
         self.last_output = None
+        self._active_range = (start, end)
         self._show_progress_context()
         self._set_busy(True)
         self._set_result_actions("busy")
-        self._set_status("Готов к загрузке", describe_range(start, end))
+        self._set_status_key("status.preparing")
+        self._meta_key = "range"
+        self._meta_values = {}
+        self.meta_label.configure(text=describe_range(start, end, self.locale))
         self._start_indeterminate()
         threading.Thread(
             target=self._read_worker,
@@ -743,7 +860,7 @@ class ClipifyApp(ctk.CTk):
             self.events.put({"event": "process_exit", "code": code})
         except Exception as exc:  # noqa: BLE001 - surface every background failure in the GUI
             LOGGER.exception("Сбой чтения событий загрузчика")
-            self.events.put({"event": "ui_exception", "text": f"Сбой загрузчика: {exc}"})
+            self.events.put({"event": "ui_exception", "key": "error.worker_read", "error": str(exc)})
 
     def _queue_event_lines(self, lines: list[str]) -> None:
         for raw_line in lines:
@@ -765,7 +882,7 @@ class ClipifyApp(ctk.CTk):
                     self._handle_event(event)
                 except Exception:  # noqa: BLE001 - event loop must remain alive
                     LOGGER.exception("Не удалось обработать событие: %r", event)
-                    self._toast(f"Системная ошибка. Подробности записаны в {LOG_FILENAME}", "danger")
+                    self._toast(self._tr("error.system", log=LOG_FILENAME), "danger")
         except queue.Empty:
             pass
         self.after(100, self._poll_events)
@@ -773,7 +890,11 @@ class ClipifyApp(ctk.CTk):
     def _handle_event(self, event: dict[str, object]) -> None:
         kind = event.get("event")
         if kind == "status":
-            self._set_status(str(event.get("text", "Работаем…")))
+            key = event.get("key")
+            if isinstance(key, str) and key:
+                self._set_status_key(key)
+            else:
+                self._set_status(str(event.get("text") or self._tr("status.working")))
         elif kind == "warning":
             self._show_notice(str(event.get("text", "")))
         elif kind == "progress":
@@ -784,11 +905,16 @@ class ClipifyApp(ctk.CTk):
                 self.percent_label.configure(text=f"{float(percent):.0f}%")
             speed = str(event.get("speed") or "")
             eta = event.get("eta")
-            eta_text = f" · осталось {int(float(eta))} с" if isinstance(eta, (int, float)) else ""
             size = str(event.get("downloaded") or "")
             total = str(event.get("total") or "")
-            total_text = f" из {total}" if total else ""
-            self.meta_label.configure(text=f"{size}{total_text} · {speed}{eta_text}".strip(" ·"))
+            progress_parts: list[str] = []
+            if size:
+                progress_parts.append(self._tr("progress.of", downloaded=size, total=total) if total else size)
+            if speed:
+                progress_parts.append(speed)
+            if isinstance(eta, (int, float)):
+                progress_parts.append(self._tr("progress.eta", seconds=int(float(eta))))
+            self._set_meta_text(" · ".join(progress_parts))
         elif kind == "complete":
             self.last_output = Path(str(event.get("filepath", portable_root())))
             self._finish_success()
@@ -796,23 +922,25 @@ class ClipifyApp(ctk.CTk):
             if self.cancelled:
                 return
             self.had_worker_error = True
-            self._show_error(str(event.get("text", "Не удалось скачать видео")))
+            self._show_error(self._event_text(event, "error.download"))
         elif kind == "ui_exception":
             self.had_worker_error = True
-            self._show_error(str(event.get("text", "Системная ошибка")))
+            self._show_error(self._event_text(event, "error.system"))
         elif kind == "process_exit":
             code = int(event.get("code", 1))
             self.process = None
             if code != 0 and not self.had_worker_error and not self.cancelled:
-                self._show_error("Загрузка завершилась с ошибкой")
+                self._show_error(self._tr("error.download_exit"))
             elif code == 0 and not self.last_output:
                 self._finish_success()
             self._set_busy(False)
 
     def _set_status(self, text: str, meta: str | None = None) -> None:
+        self._status_key = None
+        self._status_values = {}
         self.status_label.configure(text=text, text_color=COLORS["text"])
         if meta is not None:
-            self.meta_label.configure(text=meta)
+            self._set_meta_text(meta)
 
     def _show_notice(self, text: str) -> None:
         concise = text.replace("WARNING: ", "").strip()
@@ -828,8 +956,8 @@ class ClipifyApp(ctk.CTk):
         self._stop_indeterminate()
         self.progress.set(0)
         self.percent_label.configure(text="")
-        self.status_label.configure(text="Не удалось скачать", text_color=COLORS["danger"])
-        self.meta_label.configure(text=text)
+        self._set_status_key("status.failed", color=COLORS["danger"])
+        self._set_meta_text(text)
         self.notice_label.grid_remove()
         self._show_progress_context()
         self._set_result_actions("error")
@@ -842,17 +970,17 @@ class ClipifyApp(ctk.CTk):
         self._stop_indeterminate()
         self.progress.set(1)
         self.percent_label.configure(text="100%")
-        self.status_label.configure(text="Видео готово", text_color=COLORS["success"])
+        self._set_status_key("status.saved", color=COLORS["success"])
         if self.last_output and self.last_output.is_file():
-            self.meta_label.configure(text=self.last_output.name)
+            self._set_meta_text(self.last_output.name)
         else:
-            self.meta_label.configure(text="Файл сохранён в выбранную папку")
+            self._set_meta_key("meta.saved_folder")
         self.url_var.set("")
         self.start_var.set("")
         self.end_var.set("")
         self.notice_label.grid_remove()
         self._set_result_actions("success")
-        self._toast("Видео успешно сохранено", "success")
+        self._toast(self._tr("toast.saved"), "success")
 
     def _set_result_actions(self, mode: str) -> None:
         for button in (self.cancel_button, self.open_button, self.new_download_button):
@@ -887,16 +1015,20 @@ class ClipifyApp(ctk.CTk):
             self.exact_help_button,
         ):
             widget.configure(state=state)
-        self.download_button.configure(state="disabled" if busy else "normal")
         self.new_download_button.configure(state=state)
         if not busy:
             self.cancel_button.configure(state="disabled")
-            self._sync_primary_download_state()
+        self._sync_primary_download_state()
 
     def _sync_primary_download_state(self, *_args: object) -> None:
         busy = bool(self.process and self.process.poll() is None)
-        state = "normal" if self.url_var.get().strip() and not busy else "disabled"
-        self.download_button.configure(state=state)
+        enabled = bool(self.url_var.get().strip()) and not busy
+        self.download_button.configure(
+            state="normal" if enabled else "disabled",
+            fg_color=COLORS["accent"] if enabled else COLORS["disabled"],
+            hover_color=COLORS["accent_hover"] if enabled else COLORS["disabled"],
+            text_color="#FFFFFF" if enabled else COLORS["disabled_text"],
+        )
 
     def _prepare_new_download(self) -> None:
         if self.process and self.process.poll() is None:
@@ -904,6 +1036,11 @@ class ClipifyApp(ctk.CTk):
         self.last_output = None
         self.had_worker_error = False
         self.cancelled = False
+        self._active_range = None
+        self._status_key = "status.preparing"
+        self._status_values = {}
+        self._meta_key = None
+        self._meta_values = {}
         self._stop_indeterminate()
         self.progress.set(0)
         self.percent_label.configure(text="")
@@ -938,11 +1075,11 @@ class ClipifyApp(ctk.CTk):
         self._stop_indeterminate()
         self.progress.set(0)
         self.percent_label.configure(text="")
-        self.status_label.configure(text="Загрузка отменена", text_color=COLORS["warning"])
-        self.meta_label.configure(text="Можно изменить параметры и попробовать снова")
+        self._set_status_key("status.cancelled", color=COLORS["warning"])
+        self._set_meta_key("meta.cancelled")
         self._set_result_actions("error")
         self._set_busy(False)
-        self._toast("Загрузка отменена", "warning")
+        self._toast(self._tr("status.cancelled"), "warning")
         LOGGER.info("Загрузка отменена пользователем")
 
     def _terminate_process_tree(self, process: subprocess.Popen[str]) -> None:
@@ -977,7 +1114,7 @@ class ClipifyApp(ctk.CTk):
                 subprocess.Popen(["xdg-open", str(target)])
         except (OSError, ValueError) as exc:
             LOGGER.exception("Не удалось открыть папку %s", target)
-            self._toast(f"Не удалось открыть папку: {exc}", "danger")
+            self._toast(self._tr("error.open_folder", error=exc), "danger")
 
     def _on_close(self) -> None:
         if self.process and self.process.poll() is None:
@@ -1003,11 +1140,11 @@ def run_app() -> None:
     sys.excepthook = handle_unhandled
     app = ClipifyApp()
     if not font_ready or not app_id_ready:
-        missing_component = "Roboto" if not font_ready else "значок Windows"
+        missing_component = "Roboto" if not font_ready else app._tr("component.windows_icon")
         app.after(
             250,
             lambda: app._toast(
-                f"Не удалось подключить {missing_component}. Подробности записаны в {LOG_FILENAME}",
+                app._tr("error.missing_component", component=missing_component, log=LOG_FILENAME),
                 "danger",
             ),
         )
