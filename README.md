@@ -2,7 +2,7 @@
 
 Download a full YouTube video or save only the part you need. Clipify is a compact, portable desktop app for Windows and macOS. No installation or separate runtime setup is required.
 
-**Current version: 1.0.0**
+**Current version: 1.1.0**
 
 [Download Clipify for Windows or macOS](https://github.com/PanCrucian/Clipify/releases/latest)
 
@@ -25,7 +25,7 @@ Enter time as seconds, `MM:SS`, or `HH:MM:SS`. Turn on **Frame-accurate trim** w
 - Cleans unsafe file-name characters and limits long paths.
 - Records technical failures in `clipify.log` and shows a clear next step in the app.
 
-Release packages include the required download and media components. The macOS build is unsigned, so the first launch may need approval in **System Settings → Privacy & Security**.
+Choose `Clipify-darwin-arm64.zip` for Apple Silicon or `Clipify-darwin-x86_64.zip` for an Intel Mac. Release packages include the required download and media components. The macOS builds are unsigned, so the first launch may need approval in **System Settings → Privacy & Security**.
 
 ## Русский
 
@@ -41,6 +41,8 @@ Release packages include the required download and media components. The macOS b
 4. Нажмите **Скачать видео**.
 
 Время можно указать в секундах, формате `ММ:СС` или `ЧЧ:ММ:СС`. Включите **Точные границы кадра**, если важны точные начало и конец фрагмента.
+
+Для Mac с Apple Silicon скачайте `Clipify-darwin-arm64.zip`, для Mac с процессором Intel — `Clipify-darwin-x86_64.zip`.
 
 Clipify поддерживает светлую и тёмную темы, не заменяет существующие файлы, обезопасит имя файла и сохранит подробности сбоя в `clipify.log`.
 
@@ -66,7 +68,7 @@ python -m pip install -r requirements-dev.txt
 python scripts/build.py --fetch-deno
 ```
 
-PyInstaller builds native applications, so run the build on each target operating system. The GitHub Actions workflow builds Windows x64 and macOS Apple Silicon packages. Pushing a `v*` tag publishes both ZIP files as a GitHub Release.
+PyInstaller builds native applications, so run the build on each target operating system. The GitHub Actions workflow builds Windows x64, macOS Apple Silicon, and macOS Intel packages. Pushing a `v*` tag publishes all three ZIP files as a GitHub Release.
 
 ## Project layout
 
