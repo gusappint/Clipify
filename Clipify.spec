@@ -26,10 +26,6 @@ for asset in ui_assets:
         destination = "assets/icons" if asset.parent.name == "icons" else "assets"
         datas.append((str(asset), destination))
 
-for font_asset in (ROOT / "assets" / "fonts").glob("*"):
-    if font_asset.is_file():
-        datas.append((str(font_asset), "assets/fonts"))
-
 deno_name = "deno.exe" if os.name == "nt" else "deno"
 deno_candidates = [ROOT / "tools" / deno_name]
 if os.name == "nt":
