@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 import os
+import re
 import sys
 import threading
 import time
@@ -59,17 +60,6 @@ def _safe_float(value: Any) -> float | None:
     return number if math.isfinite(number) else None
 
 
-def _human_bytes(value: float | int | None) -> str:
-    if value is None:
-        return ""
-    size = float(value)
-    for unit in ("B", "KiB", "MiB", "GiB"):
-        if abs(size) < 1024 or unit == "GiB":
-            return f"{size:.1f} {unit}"
-        size /= 1024
-    return ""
-
-
 class WorkerLogger:
     def debug(self, message: str) -> None:
         LOGGER.debug("Внутренняя утилита: %s", message)
@@ -84,33 +74,101 @@ class WorkerLogger:
         self.debug(message)
 
     def warning(self, message: str) -> None:
+        # Warnings are diagnostics for the log; the window only shows outcomes.
         LOGGER.warning("Внутренняя утилита: %s", message)
-        emit("warning", text=message)
 
     def error(self, message: str) -> None:
         LOGGER.error("Внутренняя утилита: %s", message)
-        emit("log_error", text=message)
+
+
+_AUTH_REQUIRED_MARKERS = (
+    "sign in to confirm you’re not a bot",
+    "sign in to confirm you're not a bot",
+    "sign in to confirm your age",
+    "use --cookies-from-browser",
+    "login required",
+)
+_COOKIE_FAILURE_MARKERS = (
+    "could not load cookies",
+    "failed to load cookies",
+    "does not look like a netscape format cookies file",
+    "cookie file",
+)
+# Ordered: the first matching group names the problem the person can act on.
+_KNOWN_FAILURES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("error.video_private", ("private video", "video is private")),
+    ("error.video_members_only", ("members-only", "members only", "join this channel", "music premium")),
+    ("error.video_not_started", ("live event will begin", "premieres in", "this live event")),
+    ("error.video_unavailable", ("video unavailable", "has been removed", "no longer available", "not available in your country")),
+    ("error.link_broken", ("is not a valid url", "unsupported url", "incomplete youtube id")),
+    ("error.rate_limited", ("http error 429", "too many requests")),
+    ("error.disk_full", ("no space left", "errno 28", "disk full")),
+    ("error.folder_denied", ("permission denied", "errno 13", "access is denied")),
+    (
+        "error.network",
+        (
+            "unable to download webpage",
+            "urlopen error",
+            "getaddrinfo failed",
+            "name resolution",
+            "timed out",
+            "connection reset",
+            "network is unreachable",
+            "remote end closed connection",
+        ),
+    ),
+)
+
+
+def classify_download_error(message: str, has_cookie_file: bool) -> tuple[str, dict[str, str]] | None:
+    normalized = message.lower()
+    if any(marker in normalized for marker in _AUTH_REQUIRED_MARKERS):
+        if has_cookie_file:
+            return "error.youtube_session_expired", {}
+        return "error.youtube_auth_required", {}
+    if has_cookie_file and any(marker in normalized for marker in _COOKIE_FAILURE_MARKERS):
+        return "error.youtube_session_expired", {}
+    for key, markers in _KNOWN_FAILURES:
+        if any(marker in normalized for marker in markers):
+            return key, {}
+    return None
+
+
+_meta_sent = False
+
+
+def _emit_meta(info: object) -> None:
+    """Send the video title once, as soon as yt-dlp knows it."""
+
+    global _meta_sent
+    if _meta_sent or not isinstance(info, dict) or not info.get("title"):
+        return
+    _meta_sent = True
+    emit("meta", title=str(info["title"]), video_id=info.get("id"), duration=_safe_float(info.get("duration")))
 
 
 def _progress_hook(data: dict[str, Any]) -> None:
+    _emit_meta(data.get("info_dict"))
     status = data.get("status")
     if status == "downloading":
         downloaded = _safe_float(data.get("downloaded_bytes")) or 0.0
         total = _safe_float(data.get("total_bytes")) or _safe_float(data.get("total_bytes_estimate"))
         percent = min(downloaded / total * 100, 100.0) if total else None
+        # Raw numbers: the window formats units for the active language.
         emit(
             "progress",
             percent=percent,
-            speed=_human_bytes(_safe_float(data.get("speed"))) + "/s" if data.get("speed") else "",
+            speed=_safe_float(data.get("speed")),
             eta=_safe_float(data.get("eta")),
-            downloaded=_human_bytes(downloaded),
-            total=_human_bytes(total),
+            downloaded=downloaded,
+            total=total,
         )
     elif status == "finished":
         emit("status", key="status.processing_file")
 
 
 def _postprocessor_hook(data: dict[str, Any]) -> None:
+    _emit_meta(data.get("info_dict"))
     if data.get("status") == "started":
         emit("status", key="status.merging_tracks")
 
@@ -215,6 +273,8 @@ def build_options(args: argparse.Namespace, job_token: str) -> dict[str, Any]:
     }
     if deno:
         options["js_runtimes"] = {"deno": {"path": str(deno)}}
+    if args.cookies_file:
+        options["cookiefile"] = str(Path(args.cookies_file).resolve())
 
     if args.start is not None or args.end is not None:
         start = args.start if args.start is not None else 0.0
@@ -232,8 +292,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--start", type=float)
     parser.add_argument("--end", type=float)
     parser.add_argument("--exact", action="store_true")
+    parser.add_argument("--cookies-file")
     parser.add_argument("--event-file")
+    parser.add_argument("--job-token")
     return parser.parse_args(argv)
+
+
+def job_token_from(value: str | None) -> str:
+    """Use the window's token so it can find a cancelled job's partial files; never trust it as a path."""
+
+    if value and re.fullmatch(r"[0-9a-f]{8,32}", value):
+        return value
+    return uuid.uuid4().hex[:10]
 
 
 def worker_main(argv: list[str]) -> int:
@@ -242,13 +312,15 @@ def worker_main(argv: list[str]) -> int:
     _event_file = Path(args.event_file).resolve() if args.event_file else None
     output_dir = Path(args.output).resolve()
     started_at = time.time()
-    job_token = uuid.uuid4().hex[:10]
+    job_token = job_token_from(args.job_token)
 
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
         LOGGER.info("Запущен загрузчик; папка: %s", output_dir)
         emit("status", key="status.checking_tools")
         options = build_options(args, job_token)
+        if args.cookies_file:
+            emit("status", key="status.reading_cookie_file")
         emit("status", key="status.fetching_info")
         with YoutubeDL(options) as ydl:
             info = ydl.extract_info(args.url, download=True)
@@ -262,7 +334,10 @@ def worker_main(argv: list[str]) -> int:
         return 0
     except DownloadError as exc:
         LOGGER.exception("Ошибка загрузки или сети")
-        emit("error", text=str(exc).removeprefix("ERROR: "))
+        message = str(exc).removeprefix("ERROR: ")
+        classified = classify_download_error(message, bool(args.cookies_file))
+        key, values = classified if classified else ("error.download", {})
+        emit("error", key=key, **values)
     except WorkerUserError as exc:
         LOGGER.exception("Ошибка параметров загрузчика")
         emit("error", key=exc.message_key)
@@ -270,9 +345,13 @@ def worker_main(argv: list[str]) -> int:
         LOGGER.exception("Компонент загрузчика не найден")
         key = "error.ffmpeg_missing" if "FFmpeg" in str(exc) else "error.download"
         emit("error", key=key)
+    except PermissionError:
+        LOGGER.exception("Нет доступа к папке загрузки")
+        emit("error", key="error.folder_denied")
     except (OSError, ValueError) as exc:
         LOGGER.exception("Системная ошибка загрузчика")
-        emit("error", text=str(exc))
+        classified = classify_download_error(str(exc), bool(args.cookies_file))
+        emit("error", key=classified[0] if classified else "error.download")
     except Exception as exc:  # noqa: BLE001 - worker must report unexpected failures to the GUI
         LOGGER.exception("Неожиданная ошибка загрузчика")
         emit("error", key="error.unexpected_worker", error=str(exc))

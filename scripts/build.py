@@ -31,7 +31,6 @@ def main() -> None:
 
     if args.fetch_deno:
         run([sys.executable, str(ROOT / "scripts" / "fetch_deno.py")])
-    run([sys.executable, str(ROOT / "scripts" / "fetch_roboto.py")])
     run([sys.executable, str(ROOT / "scripts" / "generate_icon.py")])
     run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", str(ROOT / "Clipify.spec")])
 
@@ -62,7 +61,6 @@ def main() -> None:
     licenses = stage / "licenses"
     licenses.mkdir()
     shutil.copy2(ROOT / "assets" / "vendor" / "BOOTSTRAP-ICONS-LICENSE", licenses / "Bootstrap-Icons-MIT.txt")
-    shutil.copy2(ROOT / "assets" / "fonts" / "OFL.txt", licenses / "Roboto-OFL.txt")
 
     archive = dist / f"{artifact_name()}.zip"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as package:

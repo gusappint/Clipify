@@ -38,10 +38,10 @@ def test_range_must_move_forward() -> None:
 
 def test_format_and_describe() -> None:
     assert format_timecode(3723) == "1:02:03"
-    assert describe_range(None, None) == "Full video"
-    assert describe_range(90, 120) == "1:30 — 2:00"
+    assert describe_range(None, None) == "Whole video"
+    assert describe_range(90, 120) == "Clip 1:30–2:00"
     assert describe_range(None, None, "ru") == "Видео целиком"
-    assert describe_range(90, None, "ru") == "С 1:30 до конца"
+    assert describe_range(90, None, "ru") == "Фрагмент с 1:30"
 
 
 def test_filename_budget_is_portable(tmp_path) -> None:

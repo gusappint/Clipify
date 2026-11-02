@@ -5,13 +5,31 @@ import subprocess
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageFont
+from PIL.PngImagePlugin import PngInfo
 
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets"
 ICONS = ASSETS / "icons"
 VENDOR = ASSETS / "vendor"
+MASTER_ICON = ASSETS / "source" / "clipify-icon-1024.png"
+PROVENANCE_KEY = "impeccable:prompt"  # read with `impeccable embed-prompt <file> --read`
+
+sys.path.insert(0, str(ROOT))
+from ytclip.theme import ICON_TONES  # noqa: E402
+
+# UI glyph -> (Bootstrap Icons name, tone). Every glyph ships as <name>-light.png and <name>-dark.png.
+GLYPHS: dict[str, tuple[str, str]] = {
+    "status-queued": ("clock", "muted"),
+    "status-saved": ("check-circle-fill", "success"),
+    "status-failed": ("exclamation-circle-fill", "danger"),
+    "status-cancelled": ("x-circle", "muted"),
+    "notice-info": ("info-circle-fill", "accent"),
+    "dismiss": ("x-lg", "secondary"),
+    "thumb-placeholder": ("film", "muted"),
+    "chevron": ("chevron-down", "secondary"),
+}
 
 
 def ensure_bootstrap_icons() -> None:
@@ -25,60 +43,45 @@ def ensure_bootstrap_icons() -> None:
     subprocess.run([sys.executable, str(ROOT / "scripts" / "fetch_bootstrap_icons.py")], check=True)
 
 
-def render_glyph(name: str, size: int, color: str, destination: Path, *, canvas: int = 48) -> Image.Image:
+def provenance(text: str) -> PngInfo:
+    info = PngInfo()
+    info.add_text(PROVENANCE_KEY, text)
+    return info
+
+
+def render_glyph(name: str, color: str, destination: Path, *, canvas: int = 64) -> None:
+    """Render one glyph supersampled, so CustomTkinter can scale it down cleanly at any DPI."""
+
     mapping = json.loads((VENDOR / "bootstrap-icons.json").read_text(encoding="utf-8"))
-    font = ImageFont.truetype(str(VENDOR / "bootstrap-icons.ttf"), size=size)
-    image = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
-    draw.text((canvas / 2, canvas / 2), chr(mapping[name]), font=font, fill=color, anchor="mm")
+    scale = 4
+    font = ImageFont.truetype(str(VENDOR / "bootstrap-icons.ttf"), size=round(canvas * 0.86) * scale)
+    image = Image.new("RGBA", (canvas * scale, canvas * scale), (0, 0, 0, 0))
+    ImageDraw.Draw(image).text(
+        (canvas * scale / 2, canvas * scale / 2),
+        chr(mapping[name]),
+        font=font,
+        fill=color,
+        anchor="mm",
+    )
     destination.parent.mkdir(parents=True, exist_ok=True)
-    image.save(destination, optimize=True)
-    return image
+    origin = f"Rendered by scripts/generate_icon.py from Bootstrap Icons 1.13.1 (MIT), glyph '{name}', colour {color}."
+    image.resize((canvas, canvas), Image.Resampling.LANCZOS).save(destination, optimize=True, pnginfo=provenance(origin))
 
 
 def generate_app_icon() -> None:
-    scale = 4
-    size = 256 * scale
-    image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-
-    shadow = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    ImageDraw.Draw(shadow).rounded_rectangle(
-        (38 * scale, 44 * scale, 222 * scale, 228 * scale),
-        radius=52 * scale,
-        fill=(5, 8, 22, 165),
+    if not MASTER_ICON.is_file():
+        raise FileNotFoundError(f"Master icon not found: {MASTER_ICON}")
+    with Image.open(MASTER_ICON) as source:
+        master = source.convert("RGBA")
+    origin = provenance(
+        "Resized by scripts/generate_icon.py from assets/source/clipify-icon-1024.png, which was generated with "
+        "OpenAI image generation through the Codex plugin; its prompt is in assets/source/clipify-icon-1024.prompt.txt."
     )
-    image.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(16 * scale)))
-
-    layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    layer_draw = ImageDraw.Draw(layer)
-    for y in range(28 * scale, 225 * scale):
-        ratio = (y - 28 * scale) / (196 * scale)
-        color = (int(104 + 28 * ratio), int(84 + 10 * ratio), int(255 - 22 * ratio), 255)
-        layer_draw.line((30 * scale, y, 226 * scale, y), fill=color, width=1)
-    mask = Image.new("L", image.size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle(
-        (30 * scale, 28 * scale, 226 * scale, 224 * scale),
-        radius=52 * scale,
-        fill=255,
-    )
-    layer.putalpha(mask)
-    image.alpha_composite(layer)
-
-    mapping = json.loads((VENDOR / "bootstrap-icons.json").read_text(encoding="utf-8"))
-    font = ImageFont.truetype(str(VENDOR / "bootstrap-icons.ttf"), size=126 * scale)
-    ImageDraw.Draw(image).text(
-        (128 * scale, 130 * scale),
-        chr(mapping["cloud-arrow-down-fill"]),
-        font=font,
-        fill="white",
-        anchor="mm",
-    )
-
-    final = image.resize((256, 256), Image.Resampling.LANCZOS)
-    final.save(ASSETS / "icon.png", optimize=True)
-    final.save(
+    master.resize((256, 256), Image.Resampling.LANCZOS).save(ASSETS / "icon.png", optimize=True, pnginfo=origin)
+    master.resize((512, 512), Image.Resampling.LANCZOS).save(ASSETS / "icon-512.png", optimize=True, pnginfo=origin)
+    master.save(
         ASSETS / "icon.ico",
-        sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
+        sizes=[(16, 16), (20, 20), (24, 24), (32, 32), (40, 40), (48, 48), (64, 64), (128, 128), (256, 256)],
     )
 
 
@@ -88,11 +91,11 @@ def main() -> None:
     ensure_bootstrap_icons()
     generate_app_icon()
 
-    render_glyph("download", 38, "#FFFFFF", ICONS / "download.png")
-    render_glyph("folder2-open", 37, "#172033", ICONS / "folder-light.png")
-    render_glyph("folder2-open", 37, "#F5F7FF", ICONS / "folder-dark.png")
-    render_glyph("question-circle", 34, "#69758C", ICONS / "question-light.png")
-    render_glyph("question-circle", 34, "#9AA7C2", ICONS / "question-dark.png")
+    render_glyph("download", "#FFFFFF", ICONS / "download.png")
+    for stem, (glyph, tone) in GLYPHS.items():
+        light, dark = ICON_TONES[tone]
+        render_glyph(glyph, light, ICONS / f"{stem}-light.png")
+        render_glyph(glyph, dark, ICONS / f"{stem}-dark.png")
     print(f"Generated Clipify icons in {ASSETS}")
 
 

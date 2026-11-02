@@ -1,6 +1,8 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.pytest-auth-temp/
+.auth-cdp-smoke/
 .venv/
 .env
 .env.*
@@ -10,10 +12,15 @@ __pycache__/
 .DS_Store
 Thumbs.db
 build/
+.build-tcl/
 dist/
 tools/deno*
 !tools/README.md
 *.log
+clipify-settings.json
+clipify-settings.json.tmp
+clipify-youtube-cookies.txt
+clipify-youtube-cookies.txt.tmp
 *.pem
 *.key
 *.p12
@@ -22,3 +29,7 @@ tools/deno*
 *.keystore
 secrets/
 credentials/
+.impeccable/mocks/
+.impeccable/review/
+.impeccable/questions/
+.impeccable/hook.cache.json

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clipify — YouTube Video &amp; Clip Downloader for Windows and Mac</title>
+  <meta name="description" content="Free portable app for Windows and macOS. Download a whole YouTube video or only the part you need, by start and end time. No installation, no ads.">
+  <link rel="canonical" href="https://gusappint.github.io/Clipify/">
+  <link rel="alternate" hreflang="en" href="https://gusappint.github.io/Clipify/">
+  <link rel="alternate" hreflang="ru" href="https://gusappint.github.io/Clipify/ru/">
+  <link rel="alternate" hreflang="x-default" href="https://gusappint.github.io/Clipify/">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1e1f22" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Clipify">
+  <meta property="og:title" content="Clipify — download YouTube videos or just the part you need">
+  <meta property="og:description" content="Free portable app for Windows and macOS. Paste a link, set start and end, press Download. No installation, no ads.">
+  <meta property="og:url" content="https://gusappint.github.io/Clipify/">
+  <meta property="og:image" content="https://gusappint.github.io/Clipify/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Clipify window with a clip set from 1:20 to 2:05 and a list of downloads">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="ru_RU">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="assets/site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Clipify",
+    "description": "Free portable app for Windows and macOS that downloads a whole YouTube video or only the part between a start and an end time.",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Windows 10, Windows 11, macOS 11 or later",
+    "softwareVersion": "2.0.0",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "url": "https://gusappint.github.io/Clipify/",
+    "downloadUrl": "https://github.com/gusappint/Clipify/releases/latest",
+    "image": "https://gusappint.github.io/Clipify/assets/icon-512.png",
+    "screenshot": "https://gusappint.github.io/Clipify/assets/clipify-window-light-en.png",
+    "inLanguage": ["en", "ru"],
+    "author": { "@type": "Person", "name": "PanCrucian", "url": "https://t.me/PanCrucian" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "How do I download only part of a YouTube video?", "acceptedAnswer": { "@type": "Answer", "text": "Paste the link into Clipify, type the start and end time (for example 1:20 and 2:05) and press Download clip. Clipify downloads only that stretch. Turn on Exact cut if the clip must begin and end on the exact frame." } },
+      { "@type": "Question", "name": "Is Clipify free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. There are no ads, no paid tier and no account. The source code is on GitHub." } },
+      { "@type": "Question", "name": "Do I need to install anything?", "acceptedAnswer": { "@type": "Answer", "text": "No. Download the ZIP for your system, unzip it and run Clipify. Everything it needs is inside the archive." } },
+      { "@type": "Question", "name": "Why does YouTube ask me to sign in?", "acceptedAnswer": { "@type": "Answer", "text": "YouTube sometimes asks to confirm you're not a bot, checks your age, or limits a video to certain accounts. Press Sign in at the bottom of the Clipify window and sign in to Google in the separate browser window that opens. Clipify keeps only the YouTube session; your password stays with Google." } },
+      { "@type": "Question", "name": "macOS says Clipify can't be opened. What do I do?", "acceptedAnswer": { "@type": "Answer", "text": "The macOS builds are not signed by Apple. Open System Settings, Privacy & Security, and press Open Anyway next to the Clipify message, then run the app again." } }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./" aria-label="Clipify home">
+        <img src="assets/icon-192.png" width="32" height="32" alt="">
+        <strong>Clipify</strong><span>by PanCrucian</span>
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#faq">Questions</a>
+        <a href="https://github.com/gusappint/Clipify">GitHub</a>
+        <a class="lang" href="ru/" hreflang="ru" lang="ru">Русский</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="wrap">
+        <div>
+          <h1>Download YouTube videos — or just the part you need</h1>
+          <p class="lead">Paste a link, set a start and end time, press Download. Clipify saves the clip in the best available quality. Free for Windows and macOS, nothing to install.</p>
+          <div class="downloads">
+            <a class="button primary" href="https://github.com/gusappint/Clipify/releases/latest/download/Clipify-windows-x86_64.zip">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
+              Download for Windows
+            </a>
+            <a class="button" href="https://github.com/gusappint/Clipify/releases/latest/download/Clipify-darwin-arm64.zip">macOS · Apple Silicon</a>
+            <a class="button" href="https://github.com/gusappint/Clipify/releases/latest/download/Clipify-darwin-x86_64.zip">macOS · Intel</a>
+          </div>
+          <p class="fine">Version 2.0.0 · Windows 10/11 (64-bit) · macOS 11 or later · ZIP, no installer</p>
+        </div>
+        <figure class="shot">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="assets/clipify-window-dark-en.webp" type="image/webp">
+            <source srcset="assets/clipify-window-light-en.webp" type="image/webp">
+            <img src="assets/clipify-window-light-en.png" width="740" height="800" alt="Clipify window: a YouTube link with a clip from 1:20 to 2:05, and a downloads list with progress, a waiting video and two saved files">
+          </picture>
+        </figure>
+      </div>
+    </section>
+
+    <section class="block" id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <h2 id="how-title">Save a clip in three steps</h2>
+        <p class="intro">No settings to learn. The whole job fits in one window.</p>
+        <ol class="steps">
+          <li><h3>Paste the link</h3><p>Copy the video’s address in your browser and press <kbd>Paste</kbd>.</p></li>
+          <li><h3>Set the time</h3><p>Type Start and End as seconds, M:SS or H:MM:SS. Leave them empty to get the whole video.</p></li>
+          <li><h3>Download</h3><p>Press <kbd>Download clip</kbd>. When the row says Saved, <kbd>Show in folder</kbd> opens the file.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="block" id="features" aria-labelledby="features-title">
+      <div class="wrap">
+        <h2 id="features-title">Everything a clip downloader should do</h2>
+        <p class="intro">Built on yt-dlp and FFmpeg, wrapped in a window anyone can use.</p>
+        <dl class="features">
+          <div><dt>Only the part you need</dt><dd>Clipify downloads just the stretch between Start and End, not the whole video.</dd></div>
+          <div><dt>Exact cut</dt><dd>Starts and ends on the exact frame when precision matters. It takes longer to process.</dd></div>
+          <div><dt>Best available quality</dt><dd>Takes YouTube’s best video and audio and joins them into one file, usually MP4 or WebM.</dd></div>
+          <div><dt>A queue that shows everything</dt><dd>Add several links. Each row shows progress, size, speed and time left; cancel or retry any of them.</dd></div>
+          <div><dt>Nothing gets overwritten</dt><dd>A name clash gets a numbered copy. Odd characters and very long titles become safe file names.</dd></div>
+          <div><dt>Sign in only when YouTube asks</dt><dd>For bot checks, age checks or private videos shared with you, sign in once in a separate browser window. Your password stays with Google.</dd></div>
+          <div><dt>Portable</dt><dd>No installer, no Python, no FFmpeg setup. Unzip and run; settings stay next to the app.</dd></div>
+          <div><dt>Two languages, two themes</dt><dd>English and Russian, light and dark, following your system.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="block" id="faq" aria-labelledby="faq-title">
+      <div class="wrap">
+        <h2 id="faq-title">Questions</h2>
+        <div class="faq">
+          <details open><summary>How do I download only part of a YouTube video?</summary><p>Paste the link into Clipify, type the start and end time (for example 1:20 and 2:05) and press Download clip. Clipify downloads only that stretch. Turn on Exact cut if the clip must begin and end on the exact frame.</p></details>
+          <details><summary>Is Clipify free?</summary><p>Yes. There are no ads, no paid tier and no account. The source code is on <a href="https://github.com/gusappint/Clipify">GitHub</a>.</p></details>
+          <details><summary>Do I need to install anything?</summary><p>No. Download the ZIP for your system, unzip it and run Clipify. Everything it needs is inside the archive.</p></details>
+          <details><summary>Where are my videos saved?</summary><p>In the Clipify folder, unless you choose another one with Change…. Clipify remembers the folder you pick.</p></details>
+          <details><summary>Why does YouTube ask me to sign in?</summary><p>YouTube sometimes asks to confirm you’re not a bot, checks your age, or limits a video to certain accounts. Press Sign in at the bottom of the window and sign in to Google in the separate browser window that opens. Clipify keeps only the YouTube session, in a file next to the app; your password stays with Google.</p></details>
+          <details><summary>macOS says Clipify can’t be opened</summary><p>The macOS builds are not signed by Apple. Open System Settings → Privacy &amp; Security and press Open Anyway next to the Clipify message, then run the app again.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="get-title">
+      <div class="wrap">
+        <h2 id="get-title">Get Clipify</h2>
+        <p>Free for Windows 10/11 and macOS 11 or later.</p>
+        <div class="downloads">
+          <a class="button primary" href="https://github.com/gusappint/Clipify/releases/latest/download/Clipify-windows-x86_64.zip">Download for Windows</a>
+          <a class="button" href="https://github.com/gusappint/Clipify/releases/latest/download/Clipify-darwin-arm64.zip">macOS · Apple Silicon</a>
+          <a class="button" href="https://github.com/gusappint/Clipify/releases/latest/download/Clipify-darwin-x86_64.zip">macOS · Intel</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Clipify by <a href="https://t.me/PanCrucian">©PanCrucian</a>. Not affiliated with YouTube or Google. Download only videos you have permission to save.</p>
+      <nav aria-label="Footer">
+        <a href="https://github.com/gusappint/Clipify">Source code</a>
+        <a href="https://github.com/gusappint/Clipify/releases">All releases</a>
+        <a href="https://github.com/gusappint/Clipify/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a>
+        <a href="ru/" hreflang="ru" lang="ru">Русский</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

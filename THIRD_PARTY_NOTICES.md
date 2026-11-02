@@ -9,8 +9,12 @@ Clipify bundles or depends on the following open-source projects in portable bui
 - [Deno](https://github.com/denoland/deno) — MIT.
 - [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) — MIT.
 - [Pillow](https://python-pillow.github.io/) — HPND.
-- [Bootstrap Icons 1.13.1](https://github.com/twbs/icons) — MIT. The application, download, folder and help glyphs are derived from this icon set.
-- [Roboto](https://github.com/googlefonts/roboto-classic) — SIL Open Font License 1.1.
+- [websockets](https://github.com/python-websockets/websockets) — BSD-3-Clause.
+- [Bootstrap Icons 1.13.1](https://github.com/twbs/icons) — MIT. The download, status, notice and placeholder glyphs are rendered from this icon set.
 - Python and Tcl/Tk — PSF and Tcl/Tk licenses.
+
+The interface uses the operating system's own UI font (Segoe UI on Windows, SF on macOS); no font is bundled.
+
+The app icon was generated for Clipify with OpenAI image generation through the Codex plugin; the prompt is kept in `assets/source/clipify-icon-1024.prompt.txt`.
 
 Source and full license texts are available from the linked upstream projects.

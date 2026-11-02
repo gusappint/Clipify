@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T00:00:00Z",
+  "title": "Design System: Clipify",
+  "extensions": {
+    "colorMeta": {
+      "action-blue": { "role": "primary", "displayName": "Action Blue", "canonical": "#2563EB", "pair": ["#2563EB", "#2563EB"], "tonalRamp": ["#1E3A8A", "#1D4ED8", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE", "#EFF6FF"] },
+      "action-blue-hover": { "role": "primary", "displayName": "Pressed Blue", "canonical": "#1D4ED8", "pair": ["#1D4ED8", "#1D4ED8"], "tonalRamp": ["#1E3A8A", "#1D4ED8", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE", "#EFF6FF"] },
+      "link-blue": { "role": "primary", "displayName": "Link Blue", "canonical": "#2563EB", "pair": ["#2563EB", "#60A5FA"], "tonalRamp": ["#1E3A8A", "#1D4ED8", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE", "#EFF6FF"] },
+      "link-blue-dark": { "role": "primary", "displayName": "Link Blue (dark)", "canonical": "#60A5FA" },
+      "on-accent": { "role": "neutral", "displayName": "On Blue", "canonical": "#FFFFFF" },
+      "window": { "role": "neutral", "displayName": "Window White", "canonical": "#FFFFFF", "pair": ["#FFFFFF", "#1E1F22"], "tonalRamp": ["#111827", "#374151", "#4B5563", "#6B7280", "#9CA3AF", "#D1D5DB", "#E5E7EB", "#F9FAFB"] },
+      "window-dark": { "role": "neutral", "displayName": "Graphite Window", "canonical": "#1E1F22", "tonalRamp": ["#1E1F22", "#25262A", "#2A2B2F", "#2E3035", "#33353A", "#3F4148", "#5A5D66", "#8E949E"] },
+      "panel": { "role": "neutral", "displayName": "Quiet Panel", "canonical": "#F9FAFB", "pair": ["#F9FAFB", "#25262A"] },
+      "panel-dark": { "role": "neutral", "displayName": "Graphite Panel", "canonical": "#25262A" },
+      "field": { "role": "neutral", "displayName": "Field", "canonical": "#FFFFFF", "pair": ["#FFFFFF", "#2A2B2F"] },
+      "field-dark": { "role": "neutral", "displayName": "Graphite Field", "canonical": "#2A2B2F" },
+      "field-border": { "role": "neutral", "displayName": "Field Border", "canonical": "#D1D5DB", "pair": ["#D1D5DB", "#3F4148"] },
+      "field-border-dark": { "role": "neutral", "displayName": "Field Border (dark)", "canonical": "#3F4148" },
+      "field-border-strong": { "role": "neutral", "displayName": "Strong Border", "canonical": "#9CA3AF", "pair": ["#9CA3AF", "#5A5D66"] },
+      "field-border-strong-dark": { "role": "neutral", "displayName": "Strong Border (dark)", "canonical": "#5A5D66" },
+      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "#E5E7EB", "pair": ["#E5E7EB", "#2E3035"] },
+      "hairline-dark": { "role": "neutral", "displayName": "Hairline (dark)", "canonical": "#2E3035" },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#111827", "pair": ["#111827", "#F3F4F6"], "tonalRamp": ["#111827", "#374151", "#4B5563", "#6B7280", "#9CA3AF", "#D1D5DB", "#E5E7EB", "#F9FAFB"] },
+      "ink-dark": { "role": "neutral", "displayName": "Ink (dark)", "canonical": "#F3F4F6" },
+      "secondary": { "role": "neutral", "displayName": "Secondary Gray", "canonical": "#4B5563", "pair": ["#4B5563", "#B4B9C2"] },
+      "secondary-dark": { "role": "neutral", "displayName": "Secondary Gray (dark)", "canonical": "#B4B9C2" },
+      "muted": { "role": "neutral", "displayName": "Muted Gray", "canonical": "#6B7280", "pair": ["#6B7280", "#8E949E"] },
+      "muted-dark": { "role": "neutral", "displayName": "Muted Gray (dark)", "canonical": "#8E949E" },
+      "button-hover": { "role": "neutral", "displayName": "Button Hover", "canonical": "#F3F4F6", "pair": ["#F3F4F6", "#33353A"] },
+      "button-hover-dark": { "role": "neutral", "displayName": "Button Hover (dark)", "canonical": "#33353A" },
+      "track": { "role": "neutral", "displayName": "Progress Track", "canonical": "#E5E7EB", "pair": ["#E5E7EB", "#34363C"] },
+      "track-dark": { "role": "neutral", "displayName": "Progress Track (dark)", "canonical": "#34363C" },
+      "info-soft": { "role": "primary", "displayName": "Info Wash", "canonical": "#EFF6FF", "pair": ["#EFF6FF", "#1C2740"] },
+      "info-soft-dark": { "role": "primary", "displayName": "Info Wash (dark)", "canonical": "#1C2740" },
+      "info-line": { "role": "primary", "displayName": "Info Line", "canonical": "#BFDBFE", "pair": ["#BFDBFE", "#2B3E66"] },
+      "info-line-dark": { "role": "primary", "displayName": "Info Line (dark)", "canonical": "#2B3E66" },
+      "success": { "role": "tertiary", "displayName": "Saved Green", "canonical": "#15803D", "pair": ["#15803D", "#4ADE80"], "tonalRamp": ["#14532D", "#15803D", "#16A34A", "#22C55E", "#4ADE80", "#86EFAC", "#BBF7D0", "#F0FDF4"] },
+      "success-dark": { "role": "tertiary", "displayName": "Saved Green (dark)", "canonical": "#4ADE80" },
+      "success-soft": { "role": "tertiary", "displayName": "Success Wash", "canonical": "#F0FDF4", "pair": ["#F0FDF4", "#162A1E"] },
+      "success-line": { "role": "tertiary", "displayName": "Success Line", "canonical": "#BBF7D0", "pair": ["#BBF7D0", "#245238"] },
+      "danger": { "role": "tertiary", "displayName": "Failure Red", "canonical": "#DC2626", "pair": ["#DC2626", "#F87171"], "tonalRamp": ["#7F1D1D", "#B91C1C", "#DC2626", "#EF4444", "#F87171", "#FCA5A5", "#FECACA", "#FEF2F2"] },
+      "danger-dark": { "role": "tertiary", "displayName": "Failure Red (dark)", "canonical": "#F87171" },
+      "danger-soft": { "role": "tertiary", "displayName": "Danger Wash", "canonical": "#FEF2F2", "pair": ["#FEF2F2", "#2E1B1D"] },
+      "danger-line": { "role": "tertiary", "displayName": "Danger Line", "canonical": "#FECACA", "pair": ["#FECACA", "#5A2A2E"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Website hero headline only." },
+      "headline": { "displayName": "Headline", "purpose": "Website section headings." },
+      "title": { "displayName": "Title", "purpose": "The Clipify wordmark in the 56px app header (20px semibold)." },
+      "action": { "displayName": "Action", "purpose": "Primary Download button label (15px semibold)." },
+      "body-strong": { "displayName": "Body Strong", "purpose": "Field labels, secondary button labels, Downloads heading, row titles." },
+      "body": { "displayName": "Body", "purpose": "Field text, placeholders, checkbox label, menu items." },
+      "label": { "displayName": "Label", "purpose": "Hints, byline, counts, notice text, footer, links, compact buttons." },
+      "numeric": { "displayName": "Numeric", "purpose": "Live progress figures; static Segoe UI for tabular digits." }
+    },
+    "shadows": [
+      { "name": "product-shot", "value": "0 18px 40px -18px rgba(17,24,39,0.35), 0 4px 12px -6px rgba(17,24,39,0.18)", "purpose": "Website screenshot only (dark: 0 18px 44px -16px rgba(0,0,0,0.7), 0 4px 12px -6px rgba(0,0,0,0.5)). The app has no shadows." }
+    ],
+    "motion": [
+      { "name": "control-fill", "value": "160ms ease-out", "purpose": "Website button background and border transitions." },
+      { "name": "disclosure", "value": "180ms ease-out", "purpose": "Website FAQ chevron rotation." },
+      { "name": "reduced-motion", "value": "transition: none", "purpose": "All website transitions off under prefers-reduced-motion. The app itself has no animation; notices auto-hide after reading time plus 2s." }
+    ],
+    "breakpoints": [
+      { "name": "narrow", "value": "900px" },
+      { "name": "phone", "value": "560px" }
+    ],
+    "focus": [
+      { "name": "field-focus", "value": "border 2px #2563EB", "purpose": "Entries on focus; invalid entries keep a 1px danger border." },
+      { "name": "control-ring", "value": "border 2px #2563EB on neutral controls, 2px ink on blue-filled controls", "purpose": "Keyboard focus on CustomTkinter buttons via make_focusable." },
+      { "name": "link-focus", "value": "underline", "purpose": "Text links show their hover underline while focused." },
+      { "name": "web-outline", "value": "outline: 2px solid #2563EB; outline-offset: 3px; border-radius: 4px", "purpose": "Website :focus-visible." }
+    ],
+    "platformExceptions": [
+      "Dark-mode Action Blue stays #2563EB for white-text contrast; only text links lighten to #60A5FA.",
+      "System UI faces (Segoe UI Variable / Segoe UI / macOS system face) instead of a bundled typeface.",
+      "Hairlines are 1px CTkFrames with bg_color set, because CustomTkinter skips drawing 1px frames.",
+      "Placeholders are overlay CTkLabels, because CustomTkinter hides placeholders on variable-bound entries."
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one full-width Download action; blue fill, white download glyph, 46px tall.",
+      "html": "<button class=\"ds-btn-primary\"><svg viewBox=\"0 0 16 16\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5\"/><path d=\"M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z\"/></svg>Download video</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-width: 320px; height: 46px; padding: 0 16px; border: 0; border-radius: 6px; background: #2563EB; color: #FFFFFF; font: 600 15px 'Segoe UI Variable Text', 'Segoe UI', -apple-system, system-ui, sans-serif; cursor: pointer; transition: background-color 160ms ease-out; } .ds-btn-primary svg { width: 16px; height: 16px; } .ds-btn-primary:hover { background: #1D4ED8; } .ds-btn-primary:focus-visible { outline: none; box-shadow: inset 0 0 0 2px #111827; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Neutral 40px button attached to a field (Paste, Change…).",
+      "html": "<button class=\"ds-btn-secondary\">Change…</button>",
+      "css": ".ds-btn-secondary { height: 40px; min-width: 92px; padding: 0 14px; border: 1px solid #D1D5DB; border-radius: 6px; background: #FFFFFF; color: #111827; font: 600 13px 'Segoe UI Variable Text', 'Segoe UI', -apple-system, system-ui, sans-serif; cursor: pointer; transition: background-color 160ms ease-out; } .ds-btn-secondary:hover { background: #F3F4F6; } .ds-btn-secondary:focus-visible { outline: none; border: 2px solid #2563EB; padding: 0 13px; }"
+    },
+    {
+      "name": "Row Action",
+      "kind": "button",
+      "refersTo": "button-row-action",
+      "description": "The single action in a download row; neutral, or blue only for the sign-in recovery step.",
+      "html": "<div class=\"ds-row-actions\"><button class=\"ds-btn-row\">Try again</button><button class=\"ds-btn-row ds-btn-row--next\">Sign in</button></div>",
+      "css": ".ds-row-actions { display: flex; gap: 8px; } .ds-btn-row { height: 30px; min-width: 96px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 6px; background: #FFFFFF; color: #111827; font: 600 12px 'Segoe UI Variable Text', 'Segoe UI', -apple-system, system-ui, sans-serif; cursor: pointer; } .ds-btn-row:hover { background: #F3F4F6; } .ds-btn-row--next { border-color: #2563EB; background: #2563EB; color: #FFFFFF; } .ds-btn-row--next:hover { background: #1D4ED8; border-color: #1D4ED8; } .ds-btn-row:focus-visible { outline: none; border: 2px solid #2563EB; } .ds-btn-row--next:focus-visible { border-color: #111827; }"
+    },
+    {
+      "name": "Link Field",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "40px entry with a muted placeholder; 2px blue border on focus, danger border and message when invalid.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Video link</span><input class=\"ds-input\" placeholder=\"Paste a YouTube link\"><span class=\"ds-field-hint\">Seconds, M:SS or H:MM:SS</span></label>",
+      "css": ".ds-field { display: grid; gap: 6px; width: 360px; font-family: 'Segoe UI Variable Text', 'Segoe UI', -apple-system, system-ui, sans-serif; } .ds-field-label { font-size: 13px; font-weight: 600; color: #111827; } .ds-input { height: 40px; padding: 0 8px; border: 1px solid #D1D5DB; border-radius: 6px; background: #FFFFFF; color: #111827; font: 400 13px inherit; } .ds-input::placeholder { color: #6B7280; } .ds-input:focus { outline: none; border: 2px solid #2563EB; padding: 0 7px; } .ds-input[aria-invalid=true] { border-color: #DC2626; } .ds-field-hint { min-height: 20px; font-size: 12px; color: #6B7280; }"
+    },
+    {
+      "name": "Exact Cut Checkbox",
+      "kind": "custom",
+      "refersTo": "checkbox",
+      "description": "18px box with 4px corners, strong border off, blue fill on; muted hint to its right.",
+      "html": "<label class=\"ds-check\"><input type=\"checkbox\" checked><span>Exact cut</span><small>Cuts on the exact frame, takes longer</small></label>",
+      "css": ".ds-check { display: inline-flex; align-items: center; gap: 8px; font: 400 13px 'Segoe UI Variable Text', 'Segoe UI', -apple-system, system-ui, sans-serif; color: #111827; } .ds-check input { appearance: none; width: 18px; height: 18px; margin: 0; border: 2px solid #9CA3AF; border-radius: 4px; display: grid; place-content: center; } .ds-check input:checked { background: #2563EB; border-color: #2563EB; } .ds-check input:checked::after { content: ''; width: 5px; height: 9px; border: solid #FFFFFF; border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); } .ds-check input:focus-visible { outline: none; border-color: #2563EB; } .ds-check small { margin-left: 2px; font-size: 12px; color: #6B7280; }"
+    },
+    {
+      "name": "Notice Banner",
+      "kind": "custom",
+      "refersTo": "notice-info",
+      "description": "Tinted, bordered in-place message with a glyph and dismiss; replaces dialogs and toasts.",
+      "html": "<div class=\"ds-notice\"><svg viewBox=\"0 0 16 16\" fill=\"#2563EB\" aria-hidden=\"true\"><path d=\"M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2\"/></svg><p>Sign in once and Clipify keeps the YouTube session beside the app.</p><button class=\"ds-notice-close\" aria-label=\"Dismiss\">×</button></div>",
+      "css": ".ds-notice { display: flex; align-items: flex-start; gap: 8px; padding: 9px 6px 9px 12px; border: 1px solid #BFDBFE; border-radius: 8px; background: #EFF6FF; font: 400 12px/1.45 'Segoe UI Variable Text', 'Segoe UI', -apple-system, system-ui, sans-serif; color: #111827; } .ds-notice svg { width: 16px; height: 16px; flex: none; margin-top: 1px; } .ds-notice p { margin: 0; flex: 1; } .ds-notice-close { width: 26px; height: 26px; border: 0; border-radius: 6px; background: transparent; color: #4B5563; cursor: pointer; } .ds-notice-close:hover { background: #E5E7EB; } .ds-notice-close:focus-visible { outline: none; box-shadow: inset 0 0 0 2px #2563EB; }"
+    },
+    {
+      "name": "Downloads List",
+      "kind": "card",
+      "refersTo": "list-panel",
+      "description": "Signature: hairline-bordered panel; each row shows thumbnail, title, glyph-led status, progress and one action.",
+      "html": "<section class=\"ds-list\"><header class=\"ds-list-head\"><strong>Downloads</strong><span>2</span><a href=\"#\">Clear finished</a></header><div class=\"ds-row\"><div class=\"ds-thumb\"></div><div class=\"ds-row-main\"><strong>Sintel - Open Movie by Blender Foundation</strong><span class=\"ds-status\">42% · 27.4 MB of 65.2 MB · 6.4 MB/s · 6 s left</span><div class=\"ds-progress\"><i style=\"width:42%\"></i></div></div><button class=\"ds-row-btn\">Cancel</button></div><div class=\"ds-row\"><div class=\"ds-thumb\"></div><div class=\"ds-row-main\"><strong>Me at the zoo</strong><span class=\"ds-status ds-status--failed\">Your YouTube session expired. Sign in again.</span></div><button class=\"ds-row-btn ds-row-btn--next\">Sign in again</button></div></section>",
+      "css": ".ds-list { width: 640px; border: 1px solid #E5E7EB; border-radius: 8px; background: #FFFFFF; font-family: 'Segoe UI Variable Text', 'Segoe UI', -apple-system, system-ui, sans-serif; color: #111827; overflow: hidden; } .ds-list-head { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-bottom: 1px solid #E5E7EB; font-size: 13px; } .ds-list-head span { font-size: 12px; color: #6B7280; } .ds-list-head a { margin-left: auto; font-size: 12px; color: #2563EB; text-decoration: none; } .ds-list-head a:hover, .ds-list-head a:focus-visible { text-decoration: underline; outline: none; } .ds-row { display: flex; align-items: flex-start; gap: 12px; margin: 0 14px; padding: 12px 0; border-bottom: 1px solid #E5E7EB; } .ds-thumb { width: 80px; height: 45px; flex: none; border-radius: 4px; background: #F3F4F6; } .ds-row-main { flex: 1; display: grid; gap: 2px; min-width: 0; font-size: 13px; } .ds-row-main strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-status { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 12px; color: #6B7280; font-variant-numeric: tabular-nums; } .ds-status--failed { color: #DC2626; } .ds-progress { height: 4px; margin-top: 7px; border-radius: 2px; background: #E5E7EB; overflow: hidden; } .ds-progress i { display: block; height: 100%; background: #2563EB; } .ds-row-btn { height: 30px; min-width: 96px; padding: 0 12px; border: 1px solid #D1D5DB; border-radius: 6px; background: #FFFFFF; color: #111827; font: 600 12px inherit; cursor: pointer; } .ds-row-btn:hover { background: #F3F4F6; } .ds-row-btn--next { background: #2563EB; border-color: #2563EB; color: #FFFFFF; } .ds-row-btn--next:hover { background: #1D4ED8; } .ds-row-btn:focus-visible { outline: none; border: 2px solid #2563EB; }"
+    },
+    {
+      "name": "App Header",
+      "kind": "nav",
+      "refersTo": "header",
+      "description": "56px header: blue logo tile, 20px wordmark, muted byline, language menu at right, hairline below.",
+      "html": "<header class=\"ds-header\"><span class=\"ds-logo\"></span><strong>Clipify</strong><span class=\"ds-by\">by PanCrucian</span><button class=\"ds-lang\">English <svg viewBox=\"0 0 16 16\" fill=\"#4B5563\" aria-hidden=\"true\"><path fill-rule=\"evenodd\" d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708\"/></svg></button></header>",
+      "css": ".ds-header { display: flex; align-items: center; width: 640px; height: 56px; padding: 0 24px; border-bottom: 1px solid #E5E7EB; background: #FFFFFF; font-family: 'Segoe UI Variable Text', 'Segoe UI', -apple-system, system-ui, sans-serif; } .ds-logo { width: 30px; height: 30px; margin-right: 10px; border-radius: 7px; background: #2563EB; } .ds-header strong { font-family: 'Segoe UI Variable Display', 'Segoe UI', -apple-system, system-ui, sans-serif; font-size: 20px; font-weight: 600; color: #111827; } .ds-by { margin: 5px 0 0 8px; font-size: 12px; color: #6B7280; } .ds-lang { margin-left: auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 112px; height: 32px; border: 1px solid #D1D5DB; border-radius: 6px; background: #FFFFFF; color: #111827; font: 400 12px inherit; cursor: pointer; } .ds-lang svg { width: 12px; height: 12px; } .ds-lang:hover { background: #F3F4F6; } .ds-lang:focus-visible { outline: none; border: 2px solid #2563EB; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Well-Made Standard",
+    "overview": "Clipify is the downloader window everyone already knows how to use: one link field, one blue button, a list of downloads. It earns its place by finish rather than invention. Platform neutrals carry the whole window, a single action blue marks the one thing to press, and every job's progress, result and next step lives in place in the list, never in a toast or a modal. The quality bar is Downie on macOS.\n\nDensity is compact desktop: a resizable window around 720×600, 13px body text, 40px controls, 24px page margins, hairlines instead of cards. The website at docs/ is the same world in CSS: the same neutrals, the same blue, the same system faces, the same 6px controls, scaled up for reading.\n\nThe system rejects two named failure modes: the grey system dialog with no hierarchy, and template SaaS (lavender cards and pills, as in the 1.x window).",
+    "keyCharacteristics": [
+      "White (or #1E1F22 graphite) window, cool gray ink ladder, one action blue.",
+      "System UI faces only; weight and size carry hierarchy, never colour.",
+      "1px borders and hairlines, 6px controls, 8px containers, no shadows inside the app.",
+      "Status is spoken by a 14px glyph plus a coloured line of text, not by chips or badges.",
+      "Every light value has a dark twin; the window follows the system theme."
+    ],
+    "rules": [
+      { "name": "The One Blue Rule", "body": "Action Blue fills exactly one kind of thing: the action the person should take next. One full-width Download button per window; inside the list, a row action turns blue only when it is the recovery step (sign in). Retry, Cancel, Remove and Show in folder stay neutral.", "section": "colors" },
+      { "name": "The Paired Token Rule", "body": "No colour enters the app as a single value. Every token is a (light, dark) pair in `ytclip/theme.py`, and icon glyph colours are derived from the same pairs (`ICON_TONES`) so baked PNGs cannot drift from the palette.", "section": "colors" },
+      { "name": "The Semibold Family Rule", "body": "On Windows 11 the strong roles use the named Semibold family (\"Segoe UI Variable Text Semibold\"), not `weight=\"bold\"` on the variable face; Tk would otherwise synthesize a heavier bold. Bold weight is used only when no Semibold family exists.", "section": "typography" },
+      { "name": "The Two-Step Ramp Rule", "body": "The app's ramp is 12 / 13 / 15 / 20. A new size must justify itself against these four.", "section": "typography" },
+      { "name": "The Line Not Lift Rule", "body": "Separation is a hairline or a 1px border. If something needs to stand apart inside the window, it gets a border or a tonal fill, not a shadow.", "section": "elevation" },
+      { "name": "The Drawn Hairline Rule", "body": "CustomTkinter skips drawing frames 1px tall, so a hairline is a 1px frame whose `bg_color` is set to the hairline colour as well as its `fg_color`. Use the `hairline()` helper; never a 1px frame with `fg_color` alone.", "section": "elevation" }
+    ],
+    "dos": [
+      "**Do** take every colour from the (light, dark) pairs in `ytclip/theme.py`; add a new token as a pair or not at all.",
+      "**Do** keep Action Blue at #2563EB in dark mode for filled controls, and use Link Blue (#60A5FA) only for text on graphite.",
+      "**Do** use the system faces through `Typography` and the 12 / 13 / 15 / 20 ramp; use the numeric face for live figures.",
+      "**Do** draw 1px rules with the `hairline()` helper and placeholders with the overlay label.",
+      "**Do** give every focusable control a visible 2px focus state and Enter/Space activation.",
+      "**Do** report outcomes in place: a glyph and a status line in the row, a notice banner above the list.",
+      "**Do** size buttons and labels for the Russian copy, which runs longer than English."
+    ],
+    "donts": [
+      "**Don't** add a second filled-blue button to a view; row recovery actions are the only exception.",
+      "**Don't** introduce toasts, modals or pills for status.",
+      "**Don't** add shadows inside the app.",
+      "**Don't** bundle a display or text typeface; the system faces are the decision.",
+      "**Don't** rebuild the lavender cards and pills of the 1.x window, or flatten the window into a grey dialog with no hierarchy.",
+      "**Don't** mix icon sets or weights; new glyphs come from Bootstrap Icons through `GLYPHS` in `scripts/generate_icon.py`."
+    ]
+  }
+}
