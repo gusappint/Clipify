@@ -20,10 +20,10 @@ import customtkinter as ctk
 from PIL import Image
 
 from .browser_auth import (
-    available_browser_ids,
-    browser_display_name,
-    load_auth_browser,
-    save_auth_browser,
+    BrowserAuthCancelled,
+    BrowserAuthError,
+    authorize_youtube,
+    youtube_cookie_path,
 )
 from .font_loader import FONT_FAMILY, register_bundled_font
 from .i18n import DEFAULT_LOCALE, SUPPORTED_LOCALES, translate
@@ -116,6 +116,8 @@ class ClipifyApp(ctk.CTk):
         self._meta_key: str | None = None
         self._meta_values: dict[str, object] = {}
         self._active_range: tuple[float | None, float | None] | None = None
+        self.auth_in_progress = False
+        self.auth_cancel_event = threading.Event()
 
         self.url_var = tk.StringVar()
         self.start_var = tk.StringVar()
@@ -123,10 +125,6 @@ class ClipifyApp(ctk.CTk):
         self.output_var = tk.StringVar()
         self.exact_var = tk.BooleanVar(value=False)
         self.language_var = tk.StringVar(value=DEFAULT_LOCALE.upper())
-        self.browser_var = tk.StringVar()
-        self.browser_ids = available_browser_ids()
-        saved_browser = load_auth_browser()
-        self.browser_id: str | None = saved_browser if saved_browser in self.browser_ids else None
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -385,24 +383,19 @@ class ClipifyApp(ctk.CTk):
             font=ctk.CTkFont(size=11),
         )
         self.auth_label.grid(row=0, column=0, padx=(0, 7))
-        self.browser_menu = ctk.CTkOptionMenu(
+        self.auth_button = ctk.CTkButton(
             auth_group,
-            variable=self.browser_var,
-            values=[],
-            command=self._change_browser,
-            width=112,
+            text="",
+            command=self._start_auth,
+            width=124,
             height=32,
             corner_radius=10,
-            fg_color=COLORS["surface_alt"],
-            button_color=COLORS["accent_soft"],
-            button_hover_color=COLORS["surface_hover"],
-            dropdown_fg_color=COLORS["surface"],
-            dropdown_hover_color=COLORS["surface_hover"],
-            text_color=COLORS["text"],
-            font=ctk.CTkFont(size=11),
-            dropdown_font=ctk.CTkFont(size=11),
+            fg_color=COLORS["accent_soft"],
+            hover_color=COLORS["surface_hover"],
+            text_color=COLORS["accent_text"],
+            font=ctk.CTkFont(size=11, weight="bold"),
         )
-        self.browser_menu.grid(row=0, column=1)
+        self.auth_button.grid(row=0, column=1)
         self.auth_help_button = ctk.CTkButton(
             auth_group,
             text="",
@@ -647,7 +640,12 @@ class ClipifyApp(ctk.CTk):
         self.output_entry.configure(placeholder_text=self._tr("output.placeholder"))
         self.exact_switch.configure(text=self._tr("exact.label"))
         self.auth_label.configure(text=self._tr("auth.label"))
-        self._refresh_browser_menu()
+        if self.auth_in_progress:
+            self.auth_button.configure(text=self._tr("action.auth_wait"))
+        elif youtube_cookie_path().is_file():
+            self.auth_button.configure(text=self._tr("action.auth_refresh"))
+        else:
+            self.auth_button.configure(text=self._tr("action.auth_sign_in"))
         self.download_button.configure(text=self._tr("action.download"))
         self.cancel_button.configure(text=self._tr("action.cancel"))
         self.new_download_button.configure(text=self._tr("action.download_another"))
@@ -750,27 +748,30 @@ class ClipifyApp(ctk.CTk):
     def _show_exact_help(self) -> None:
         self._toast(self._tr("toast.exact_help"), "accent")
 
-    def _browser_labels(self) -> dict[str | None, str]:
-        return {
-            None: self._tr("auth.none"),
-            **{browser_id: browser_display_name(browser_id) for browser_id in self.browser_ids},
-        }
-
-    def _refresh_browser_menu(self) -> None:
-        labels = self._browser_labels()
-        self.browser_menu.configure(values=list(labels.values()))
-        self.browser_var.set(labels.get(self.browser_id, labels[None]))
-
-    def _change_browser(self, selection: str) -> None:
-        labels = self._browser_labels()
-        self.browser_id = next((browser_id for browser_id, label in labels.items() if label == selection), None)
-        try:
-            save_auth_browser(self.browser_id)
-        except (OSError, UnicodeError, ValueError) as exc:
-            LOGGER.exception("Не удалось сохранить выбранный браузер")
-            self._toast(self._tr("error.save_settings", error=exc), "danger")
+    def _start_auth(self) -> None:
+        if self.auth_in_progress or (self.process and self.process.poll() is None):
             return
-        LOGGER.info("Сессия YouTube: %s", self.browser_id or "не используется")
+        self.auth_in_progress = True
+        self.auth_cancel_event.clear()
+        self.auth_button.configure(state="disabled", text=self._tr("action.auth_wait"))
+        self._sync_primary_download_state()
+        self._toast(self._tr("toast.auth_started"), "accent")
+        threading.Thread(target=self._run_auth, name="clipify-youtube-auth", daemon=True).start()
+
+    def _run_auth(self) -> None:
+        try:
+            cookie_file, browser = authorize_youtube(self.auth_cancel_event)
+            LOGGER.info("Авторизация YouTube завершена через %s; cookies: %s", browser, cookie_file)
+            self.events.put({"event": "auth_success", "browser": browser})
+        except BrowserAuthCancelled:
+            LOGGER.info("Авторизация YouTube отменена")
+            self.events.put({"event": "auth_cancelled"})
+        except BrowserAuthError as exc:
+            LOGGER.exception("Не удалось авторизоваться в YouTube")
+            self.events.put({"event": "auth_error", "key": exc.message_key, **exc.values})
+        except Exception as exc:  # noqa: BLE001 - auth failures must reach the GUI
+            LOGGER.exception("Неожиданная ошибка авторизации YouTube")
+            self.events.put({"event": "auth_error", "key": "error.auth_failed", "error": str(exc)})
 
     def _show_auth_help(self) -> None:
         self._toast(self._tr("toast.auth_help"), "accent")
@@ -863,8 +864,9 @@ class ClipifyApp(ctk.CTk):
                 command.extend(("--end", str(end)))
             if self.exact_var.get():
                 command.append("--exact")
-            if self.browser_id:
-                command.extend(("--browser", self.browser_id))
+            cookie_file = youtube_cookie_path()
+            if cookie_file.is_file():
+                command.extend(("--cookies-file", str(cookie_file)))
 
             environment = os.environ.copy()
             environment["PYTHONUTF8"] = "1"
@@ -975,7 +977,8 @@ class ClipifyApp(ctk.CTk):
         if kind == "status":
             key = event.get("key")
             if isinstance(key, str) and key:
-                self._set_status_key(key)
+                values = {name: value for name, value in event.items() if name not in {"event", "key"}}
+                self._set_status_key(key, **values)
             else:
                 self._set_status(str(event.get("text") or self._tr("status.working")))
         elif kind == "warning":
@@ -1009,6 +1012,23 @@ class ClipifyApp(ctk.CTk):
         elif kind == "ui_exception":
             self.had_worker_error = True
             self._show_error(self._event_text(event, "error.system"))
+        elif kind == "auth_success":
+            self.auth_in_progress = False
+            self.auth_button.configure(state="normal")
+            self._refresh_copy()
+            self._sync_primary_download_state()
+            self._toast(self._tr("toast.auth_success", browser=event.get("browser", "")), "success")
+        elif kind == "auth_error":
+            self.auth_in_progress = False
+            self.auth_button.configure(state="normal")
+            self._refresh_copy()
+            self._sync_primary_download_state()
+            self._toast(self._event_text(event, "error.auth_failed"), "danger")
+        elif kind == "auth_cancelled":
+            self.auth_in_progress = False
+            self.auth_button.configure(state="normal")
+            self._refresh_copy()
+            self._sync_primary_download_state()
         elif kind == "process_exit":
             code = int(event.get("code", 1))
             self.process = None
@@ -1096,10 +1116,10 @@ class ClipifyApp(ctk.CTk):
             self.folder_button,
             self.exact_switch,
             self.exact_help_button,
-            self.browser_menu,
             self.auth_help_button,
         ):
             widget.configure(state=state)
+        self.auth_button.configure(state="disabled" if busy or self.auth_in_progress else "normal")
         self.new_download_button.configure(state=state)
         if not busy:
             self.cancel_button.configure(state="disabled")
@@ -1107,7 +1127,7 @@ class ClipifyApp(ctk.CTk):
 
     def _sync_primary_download_state(self, *_args: object) -> None:
         busy = bool(self.process and self.process.poll() is None)
-        enabled = bool(self.url_var.get().strip()) and not busy
+        enabled = bool(self.url_var.get().strip()) and not busy and not self.auth_in_progress
         self.download_button.configure(
             state="normal" if enabled else "disabled",
             fg_color=COLORS["accent"] if enabled else COLORS["disabled"],
@@ -1202,6 +1222,7 @@ class ClipifyApp(ctk.CTk):
             self._toast(self._tr("error.open_folder", error=exc), "danger")
 
     def _on_close(self) -> None:
+        self.auth_cancel_event.set()
         if self.process and self.process.poll() is None:
             self._terminate_process_tree(self.process)
         LOGGER.info("Clipify завершён")

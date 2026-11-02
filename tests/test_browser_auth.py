@@ -1,62 +1,101 @@
 from pathlib import Path
 
-from ytclip.browser_auth import available_browser_ids, load_auth_browser, save_auth_browser
+import pytest
+from yt_dlp import YoutubeDL
+
+from ytclip.browser_auth import BrowserAuthError, has_authenticated_youtube_session, save_youtube_cookies
 from ytclip.worker import build_options, classify_download_error, parse_args
 
 
-def test_browser_choice_is_saved_and_loaded(tmp_path: Path) -> None:
-    settings = tmp_path / "clipify-settings.json"
-
-    save_auth_browser("chrome", settings)
-
-    assert load_auth_browser(settings) == "chrome"
-    assert "chrome" in settings.read_text(encoding="utf-8")
-
-
-def test_no_sign_in_choice_is_saved(tmp_path: Path) -> None:
-    settings = tmp_path / "clipify-settings.json"
-    save_auth_browser("edge", settings)
-
-    save_auth_browser(None, settings)
-
-    assert load_auth_browser(settings) is None
+def _youtube_cookie(name: str, value: str = "secret") -> dict[str, object]:
+    return {
+        "domain": ".youtube.com",
+        "path": "/",
+        "secure": True,
+        "httpOnly": True,
+        "expires": 2_000_000_000,
+        "name": name,
+        "value": value,
+    }
 
 
-def test_platform_browser_lists_do_not_offer_safari_on_windows() -> None:
-    assert "safari" not in available_browser_ids(platform="win32", os_name="nt")
-    assert "safari" in available_browser_ids(platform="darwin", os_name="posix")
+def test_authenticated_session_requires_youtube_login_cookie() -> None:
+    assert has_authenticated_youtube_session([_youtube_cookie("SAPISID")])
+    assert not has_authenticated_youtube_session([_youtube_cookie("PREF")])
+    assert not has_authenticated_youtube_session([{**_youtube_cookie("SAPISID"), "domain": ".example.com"}])
 
 
-def test_worker_accepts_browser_session() -> None:
-    args = parse_args(["--url", "https://youtu.be/example", "--output", ".", "--browser", "firefox"])
+def test_saves_only_youtube_cookies_in_netscape_format(tmp_path: Path) -> None:
+    target = tmp_path / "cookies.txt"
+    cookies = [
+        _youtube_cookie("SAPISID"),
+        _youtube_cookie("PREF", "language=ru"),
+        {**_youtube_cookie("SID"), "domain": ".google.com"},
+    ]
 
-    assert args.browser == "firefox"
+    save_youtube_cookies(cookies, target)
+
+    text = target.read_text(encoding="utf-8")
+    assert text.startswith("# Netscape HTTP Cookie File")
+    assert "#HttpOnly_.youtube.com\tTRUE\t/\tTRUE\t2000000000\tSAPISID\tsecret" in text
+    assert "language=ru" in text
+    assert ".google.com" not in text
+
+    with YoutubeDL({"cookiefile": str(target), "quiet": True}) as downloader:
+        header = downloader.cookiejar.get_cookie_header("https://www.youtube.com/watch?v=example")
+    assert header is not None and "SAPISID=secret" in header
 
 
-def test_worker_passes_browser_session_to_downloader(tmp_path: Path, monkeypatch) -> None:
+def test_refuses_to_save_anonymous_session(tmp_path: Path) -> None:
+    with pytest.raises(BrowserAuthError) as error:
+        save_youtube_cookies([_youtube_cookie("PREF")], tmp_path / "cookies.txt")
+
+    assert error.value.message_key == "error.auth_not_signed_in"
+
+
+def test_worker_accepts_saved_cookie_file(tmp_path: Path) -> None:
+    cookie_file = tmp_path / "cookies.txt"
+    args = parse_args(
+        ["--url", "https://youtu.be/example", "--output", ".", "--cookies-file", str(cookie_file)]
+    )
+
+    assert args.cookies_file == str(cookie_file)
+
+
+def test_worker_passes_cookie_file_to_downloader(tmp_path: Path, monkeypatch) -> None:
     ffmpeg = tmp_path / "ffmpeg.exe"
     ffmpeg.touch()
+    cookie_file = tmp_path / "cookies.txt"
+    cookie_file.touch()
     monkeypatch.setattr("ytclip.worker.find_ffmpeg", lambda: ffmpeg)
     monkeypatch.setattr("ytclip.worker.find_deno", lambda: None)
     args = parse_args(
-        ["--url", "https://youtu.be/example", "--output", str(tmp_path), "--browser", "edge"]
+        [
+            "--url",
+            "https://youtu.be/example",
+            "--output",
+            str(tmp_path),
+            "--cookies-file",
+            str(cookie_file),
+        ]
     )
 
     options = build_options(args, "testjob")
 
-    assert options["cookiesfrombrowser"] == ("edge", None, None, None)
+    assert options["cookiefile"] == str(cookie_file.resolve())
+    assert "cookiesfrombrowser" not in options
 
 
-def test_auth_error_suggests_browser_when_none_is_selected() -> None:
+def test_auth_error_requests_sign_in_without_saved_session() -> None:
     classified = classify_download_error(
         "Sign in to confirm you’re not a bot. Use --cookies-from-browser for the authentication.",
-        None,
+        False,
     )
 
     assert classified == ("error.youtube_auth_required", {})
 
 
-def test_auth_error_names_the_selected_browser() -> None:
-    classified = classify_download_error("Sign in to confirm your age", "chrome")
+def test_auth_error_marks_saved_session_as_expired() -> None:
+    classified = classify_download_error("Sign in to confirm your age", True)
 
-    assert classified == ("error.youtube_session_failed", {"browser": "Chrome"})
+    assert classified == ("error.youtube_session_expired", {})
