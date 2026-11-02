@@ -19,6 +19,12 @@ from urllib.parse import urlparse
 import customtkinter as ctk
 from PIL import Image
 
+from .browser_auth import (
+    available_browser_ids,
+    browser_display_name,
+    load_auth_browser,
+    save_auth_browser,
+)
 from .font_loader import FONT_FAMILY, register_bundled_font
 from .i18n import DEFAULT_LOCALE, SUPPORTED_LOCALES, translate
 from .logging_utils import LOG_FILENAME, get_logger
@@ -117,6 +123,10 @@ class ClipifyApp(ctk.CTk):
         self.output_var = tk.StringVar()
         self.exact_var = tk.BooleanVar(value=False)
         self.language_var = tk.StringVar(value=DEFAULT_LOCALE.upper())
+        self.browser_var = tk.StringVar()
+        self.browser_ids = available_browser_ids()
+        saved_browser = load_auth_browser()
+        self.browser_id: str | None = saved_browser if saved_browser in self.browser_ids else None
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -334,8 +344,12 @@ class ClipifyApp(ctk.CTk):
         )
         self.folder_button.grid(row=1, column=1)
 
-        exact_group = ctk.CTkFrame(content, fg_color="transparent")
-        exact_group.grid(row=4, column=0, sticky="w", pady=(0, 18))
+        settings_row = ctk.CTkFrame(content, fg_color="transparent")
+        settings_row.grid(row=4, column=0, sticky="ew", pady=(0, 18))
+        settings_row.grid_columnconfigure(1, weight=1)
+
+        exact_group = ctk.CTkFrame(settings_row, fg_color="transparent")
+        exact_group.grid(row=0, column=0, sticky="w")
         self.exact_switch = ctk.CTkSwitch(
             exact_group,
             text="",
@@ -361,6 +375,46 @@ class ClipifyApp(ctk.CTk):
             command=self._show_exact_help,
         )
         self.exact_help_button.grid(row=0, column=1, padx=(4, 0))
+
+        auth_group = ctk.CTkFrame(settings_row, fg_color="transparent")
+        auth_group.grid(row=0, column=1, sticky="e")
+        self.auth_label = ctk.CTkLabel(
+            auth_group,
+            text="",
+            text_color=COLORS["muted"],
+            font=ctk.CTkFont(size=11),
+        )
+        self.auth_label.grid(row=0, column=0, padx=(0, 7))
+        self.browser_menu = ctk.CTkOptionMenu(
+            auth_group,
+            variable=self.browser_var,
+            values=[],
+            command=self._change_browser,
+            width=112,
+            height=32,
+            corner_radius=10,
+            fg_color=COLORS["surface_alt"],
+            button_color=COLORS["accent_soft"],
+            button_hover_color=COLORS["surface_hover"],
+            dropdown_fg_color=COLORS["surface"],
+            dropdown_hover_color=COLORS["surface_hover"],
+            text_color=COLORS["text"],
+            font=ctk.CTkFont(size=11),
+            dropdown_font=ctk.CTkFont(size=11),
+        )
+        self.browser_menu.grid(row=0, column=1)
+        self.auth_help_button = ctk.CTkButton(
+            auth_group,
+            text="",
+            image=self._images.get("question"),
+            width=28,
+            height=28,
+            corner_radius=9,
+            fg_color="transparent",
+            hover_color=COLORS["surface_hover"],
+            command=self._show_auth_help,
+        )
+        self.auth_help_button.grid(row=0, column=2, padx=(4, 0))
 
         self.action_host = ctk.CTkFrame(content, fg_color="transparent")
         self.action_host.grid(row=5, column=0, sticky="ew")
@@ -592,6 +646,8 @@ class ClipifyApp(ctk.CTk):
         self.output_label.configure(text=self._tr("output.label"))
         self.output_entry.configure(placeholder_text=self._tr("output.placeholder"))
         self.exact_switch.configure(text=self._tr("exact.label"))
+        self.auth_label.configure(text=self._tr("auth.label"))
+        self._refresh_browser_menu()
         self.download_button.configure(text=self._tr("action.download"))
         self.cancel_button.configure(text=self._tr("action.cancel"))
         self.new_download_button.configure(text=self._tr("action.download_another"))
@@ -694,6 +750,31 @@ class ClipifyApp(ctk.CTk):
     def _show_exact_help(self) -> None:
         self._toast(self._tr("toast.exact_help"), "accent")
 
+    def _browser_labels(self) -> dict[str | None, str]:
+        return {
+            None: self._tr("auth.none"),
+            **{browser_id: browser_display_name(browser_id) for browser_id in self.browser_ids},
+        }
+
+    def _refresh_browser_menu(self) -> None:
+        labels = self._browser_labels()
+        self.browser_menu.configure(values=list(labels.values()))
+        self.browser_var.set(labels.get(self.browser_id, labels[None]))
+
+    def _change_browser(self, selection: str) -> None:
+        labels = self._browser_labels()
+        self.browser_id = next((browser_id for browser_id, label in labels.items() if label == selection), None)
+        try:
+            save_auth_browser(self.browser_id)
+        except (OSError, UnicodeError, ValueError) as exc:
+            LOGGER.exception("Не удалось сохранить выбранный браузер")
+            self._toast(self._tr("error.save_settings", error=exc), "danger")
+            return
+        LOGGER.info("Сессия YouTube: %s", self.browser_id or "не используется")
+
+    def _show_auth_help(self) -> None:
+        self._toast(self._tr("toast.auth_help"), "accent")
+
     def _paste_url(self) -> None:
         try:
             value = self.clipboard_get().strip()
@@ -782,6 +863,8 @@ class ClipifyApp(ctk.CTk):
                 command.extend(("--end", str(end)))
             if self.exact_var.get():
                 command.append("--exact")
+            if self.browser_id:
+                command.extend(("--browser", self.browser_id))
 
             environment = os.environ.copy()
             environment["PYTHONUTF8"] = "1"
@@ -1013,6 +1096,8 @@ class ClipifyApp(ctk.CTk):
             self.folder_button,
             self.exact_switch,
             self.exact_help_button,
+            self.browser_menu,
+            self.auth_help_button,
         ):
             widget.configure(state=state)
         self.new_download_button.configure(state=state)

@@ -2,7 +2,7 @@
 
 Download a full YouTube video or save only the part you need. Clipify is a compact, portable desktop app for Windows and macOS. No installation or separate runtime setup is required.
 
-**Current version: 1.1.0**
+**Current version: 1.2.0**
 
 [Download Clipify for Windows or macOS](https://github.com/gusappint/Clipify/releases/latest)
 
@@ -15,6 +15,8 @@ Download a full YouTube video or save only the part you need. Clipify is a compa
 
 Enter time as seconds, `MM:SS`, or `HH:MM:SS`. Turn on **Frame-accurate trim** when the exact first and last frames matter.
 
+If YouTube asks you to sign in or verify that you’re not a bot, choose a browser in **YouTube session**. Sign in to YouTube in that browser first. Clipify remembers the browser choice and reads its current session automatically; it never asks for or stores your password.
+
 ## What Clipify handles for you
 
 - Downloads complete videos or open-ended and fixed-length clips.
@@ -24,6 +26,7 @@ Enter time as seconds, `MM:SS`, or `HH:MM:SS`. Turn on **Frame-accurate trim** w
 - Keeps existing files and numbers new copies automatically.
 - Cleans unsafe file-name characters and limits long paths.
 - Records technical failures in `clipify.log` and shows a clear next step in the app.
+- Uses a signed-in browser session for videos that require YouTube verification.
 
 Choose `Clipify-darwin-arm64.zip` for Apple Silicon or `Clipify-darwin-x86_64.zip` for an Intel Mac. Release packages include the required download and media components. The macOS builds are unsigned, so the first launch may need approval in **System Settings → Privacy & Security**.
 
@@ -41,6 +44,8 @@ Choose `Clipify-darwin-arm64.zip` for Apple Silicon or `Clipify-darwin-x86_64.zi
 4. Нажмите **Скачать видео**.
 
 Время можно указать в секундах, формате `ММ:СС` или `ЧЧ:ММ:СС`. Включите **Точные границы кадра**, если важны точные начало и конец фрагмента.
+
+Если YouTube просит войти или подтвердить, что вы не бот, сначала войдите в YouTube в браузере, затем выберите его в поле **Вход YouTube**. Clipify запомнит выбор и будет автоматически использовать актуальную сессию браузера. Пароль программа не запрашивает и не хранит.
 
 Для Mac с Apple Silicon скачайте `Clipify-darwin-arm64.zip`, для Mac с процессором Intel — `Clipify-darwin-x86_64.zip`.
 
