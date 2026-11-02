@@ -15,7 +15,7 @@ Mode: Operate. Audience: non-technical people who downloaded a release from GitH
 
 THESIS: The category-standard downloader done at Downie's level of care: one link field, one blue Download button, and a downloads list that shows every job's progress, result and next step in place. It refuses both the 1.x lavender SaaS card and the grey system dialog.
 
-OWN-WORLD: Platform neutrals: white window, ink #111827, secondary #4B5563, hairlines #E5E7EB, a single action blue #2563EB; dark mode mirrors it on #1F2023 with #F3F4F6 ink and #3B82F6 blue. System UI type (Segoe UI Variable / Segoe UI on Windows, SF Pro on macOS) in a tight 12/13/15/20 scale. 6px radii, 1px borders, standard inputs, checkbox, dropdown and list rows; Bootstrap Icons glyphs at one weight.
+OWN-WORLD: Platform neutrals: white window, ink #111827, secondary #4B5563, hairlines #E5E7EB, a single action blue #2563EB; dark mode mirrors it on #1E1F22 with #F3F4F6 ink; filled controls keep #2563EB so white labels hold AA, and only text links lighten to #60A5FA. System UI type (Segoe UI Variable / Segoe UI on Windows, SF Pro on macOS) in a tight 12/13/15/20 scale. 6px radii, 1px borders, standard inputs, checkbox, dropdown and list rows; Bootstrap Icons glyphs at one weight.
 
 STORY: A first-time visitor sees immediately what to paste and what to press. Clip times and folder are optional and sit in one row. The list below confirms each download and offers the next action (show the file, retry, sign in) without toasts or modals.
 

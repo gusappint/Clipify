@@ -28,7 +28,6 @@ COLORS: dict[str, tuple[str, str]] = {
     "button_hover": ("#F3F4F6", "#33353A"),
     "menu": ("#F3F4F6", "#2A2B2F"),
     "menu_hover": ("#E5E7EB", "#33353A"),
-    "disabled": ("#E5E7EB", "#2A2B2F"),
     "disabled_text": ("#6B7280", "#8E949E"),
     "track": ("#E5E7EB", "#34363C"),
     "thumb": ("#F3F4F6", "#2A2B2F"),
