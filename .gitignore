@@ -10,10 +10,13 @@ __pycache__/
 .DS_Store
 Thumbs.db
 build/
+.build-tcl/
 dist/
 tools/deno*
 !tools/README.md
 *.log
+clipify-settings.json
+clipify-settings.json.tmp
 *.pem
 *.key
 *.p12
