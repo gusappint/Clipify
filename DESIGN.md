@@ -79,6 +79,11 @@ typography:
     fontSize: "12px"
     fontWeight: 400
     fontFeature: "tnum"
+  web-body:
+    fontFamily: "Segoe UI Variable Text, Segoe UI, -apple-system, SF Pro Text, system-ui, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 400
+    lineHeight: 1.6
 rounded:
   hairline: "2px"
   sm: "4px"
@@ -217,6 +222,7 @@ A cool gray neutral ladder with one blue for action and two semantic tones for o
 - **Body** (regular, 13px): field text, placeholders, checkbox label, menu items. Website body is 1rem/1.6.
 - **Label** (regular, 12px): hints, the byline, counts, notice text, footer, links, compact buttons.
 - **Numeric** (regular, 12px, tabular): live progress lines (percent, sizes, speed, time left), so figures do not jitter.
+- **Web Body** (regular, 1rem / 1.6): website body copy; the site's small text reuses 13px (0.8125rem), its nav and buttons 15px (0.9375rem), its lead 20px (1.25rem).
 
 ### Named Rules
 **The Semibold Family Rule.** On Windows 11 the strong roles use the named Semibold family ("Segoe UI Variable Text Semibold"), not `weight="bold"` on the variable face; Tk would otherwise synthesize a heavier bold. Bold weight is used only when no Semibold family exists.
