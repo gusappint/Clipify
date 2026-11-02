@@ -78,7 +78,6 @@ def generate_app_icon() -> None:
         "OpenAI image generation through the Codex plugin; its prompt is in assets/source/clipify-icon-1024.prompt.txt."
     )
     master.resize((256, 256), Image.Resampling.LANCZOS).save(ASSETS / "icon.png", optimize=True, pnginfo=origin)
-    master.resize((512, 512), Image.Resampling.LANCZOS).save(ASSETS / "icon-512.png", optimize=True, pnginfo=origin)
     master.save(
         ASSETS / "icon.ico",
         sizes=[(16, 16), (20, 20), (24, 24), (32, 32), (40, 40), (48, 48), (64, 64), (128, 128), (256, 256)],
