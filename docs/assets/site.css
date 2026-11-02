@@ -37,7 +37,10 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 400 1rem/1.6 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: "Segoe UI Variable Text", "Segoe UI", -apple-system, "SF Pro Text", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -73,11 +76,14 @@ img { max-width: 100%; height: auto; display: block; }
 .hero .wrap { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr); gap: 56px; align-items: center; }
 .hero h1 {
   margin: 0 0 18px;
-  font: 600 clamp(2.25rem, 1.4rem + 2.6vw, 3.5rem)/1.08 "Segoe UI Variable Display", "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  font-family: "Segoe UI Variable Display", "Segoe UI", -apple-system, "SF Pro Display", system-ui, sans-serif;
+  font-size: clamp(2.25rem, 1.4rem + 2.6vw, 3.5rem);
+  font-weight: 600;
+  line-height: 1.08;
   letter-spacing: -0.025em;
   text-wrap: balance;
 }
-.hero p.lead { margin: 0 0 30px; font-size: 1.1875rem; color: var(--secondary); max-width: 34rem; }
+.hero p.lead { margin: 0 0 30px; font-size: 1.25rem; line-height: 1.5; color: var(--secondary); max-width: 34rem; }
 .downloads { display: flex; flex-wrap: wrap; gap: 10px; }
 .button {
   display: inline-flex; align-items: center; gap: 10px;
@@ -90,30 +96,30 @@ img { max-width: 100%; height: auto; display: block; }
 .button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .button.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 .button svg { width: 18px; height: 18px; flex: none; }
-.fine { margin: 16px 0 0; color: var(--muted); font-size: 0.875rem; }
+.fine { margin: 16px 0 0; color: var(--muted); font-size: 0.8125rem; }
 .shot { margin: 0; }
-.shot img { border-radius: 10px; box-shadow: var(--shadow); border: 1px solid var(--line); }
+.shot img { border-radius: 8px; box-shadow: var(--shadow); border: 1px solid var(--line); }
 .shot figcaption { margin-top: 12px; color: var(--muted); font-size: 0.8125rem; text-align: center; }
 
 /* Sections */
 section.block { padding: 72px 0; border-top: 1px solid var(--line); }
 section.block h2 {
   margin: 0 0 12px; font-size: 1.875rem; line-height: 1.2; font-weight: 600; letter-spacing: -0.015em;
-  font-family: "Segoe UI Variable Display", "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  font-family: "Segoe UI Variable Display", "Segoe UI", -apple-system, "SF Pro Display", system-ui, sans-serif;
 }
-section.block > .wrap > p.intro { margin: 0 0 36px; color: var(--secondary); max-width: 40rem; font-size: 1.0625rem; }
+section.block > .wrap > p.intro { margin: 0 0 36px; color: var(--secondary); max-width: 40rem; font-size: 1rem; }
 
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; counter-reset: step; }
 .steps li { counter-increment: step; }
 .steps li::before {
   content: counter(step);
   display: inline-grid; place-items: center; width: 30px; height: 30px; margin-bottom: 14px;
-  border-radius: 50%; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 0.875rem;
+  border-radius: 50%; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 0.8125rem;
 }
-.steps h3 { margin: 0 0 6px; font-size: 1.0625rem; font-weight: 600; }
+.steps h3 { margin: 0 0 6px; font-size: 1rem; font-weight: 600; }
 .steps p { margin: 0; color: var(--secondary); }
 kbd {
-  font: 600 0.875em/1 inherit; padding: 2px 6px; border: 1px solid var(--line); border-bottom-width: 2px;
+  font-family: inherit; font-weight: 600; font-size: 0.875em; line-height: 1; padding: 2px 6px; border: 1px solid var(--line); border-bottom-width: 2px;
   border-radius: 4px; background: var(--panel); white-space: nowrap;
 }
 
@@ -126,7 +132,7 @@ kbd {
 .faq details { border-bottom: 1px solid var(--line); }
 .faq summary {
   cursor: pointer; list-style: none; padding: 18px 32px 18px 0; position: relative;
-  font-weight: 600; font-size: 1.0625rem;
+  font-weight: 600; font-size: 1rem;
 }
 .faq summary::-webkit-details-marker { display: none; }
 .faq summary::after {
@@ -142,7 +148,7 @@ kbd {
 .closing p { margin: 0 0 28px; color: var(--secondary); }
 .closing .downloads { justify-content: center; }
 
-.site-footer { border-top: 1px solid var(--line); padding: 28px 0 36px; color: var(--muted); font-size: 0.875rem; }
+.site-footer { border-top: 1px solid var(--line); padding: 28px 0 36px; color: var(--muted); font-size: 0.8125rem; }
 .site-footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 .site-footer a { color: var(--secondary); }
