@@ -29,3 +29,7 @@ clipify-youtube-cookies.txt.tmp
 *.keystore
 secrets/
 credentials/
+.impeccable/mocks/
+.impeccable/review/
+.impeccable/questions/
+.impeccable/hook.cache.json

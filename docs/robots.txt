@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gusappint.github.io/Clipify/sitemap.xml

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from ytclip.ui import toast_duration_ms
+from ytclip.ui import reading_time_ms
 
 
-def test_toast_duration_grows_with_reading_length() -> None:
-    short = toast_duration_ms("Видео готово")
-    long = toast_duration_ms("Подробное сообщение об ошибке с дополнительными сведениями для пользователя")
+def test_notice_reading_time_grows_with_length() -> None:
+    short = reading_time_ms("Видео сохранено")
+    long = reading_time_ms("Подробное сообщение об ошибке с дополнительными сведениями для пользователя")
 
     assert 2800 <= short < long <= 15000
