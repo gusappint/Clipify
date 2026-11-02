@@ -15,7 +15,6 @@ from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.ffmpeg import FFmpegPostProcessor
 from yt_dlp.utils import DownloadError, download_range_func
 
-from .browser_auth import SUPPORTED_BROWSER_IDS, browser_display_name
 from .logging_utils import get_logger
 from .platform_tools import find_deno, find_ffmpeg
 
@@ -100,24 +99,21 @@ _AUTH_REQUIRED_MARKERS = (
     "login required",
 )
 _COOKIE_FAILURE_MARKERS = (
-    "could not copy chrome cookie database",
-    "could not find chrome cookies database",
-    "could not find firefox cookies database",
     "could not load cookies",
     "failed to load cookies",
-    "failed to decrypt",
-    "unable to decrypt",
+    "does not look like a netscape format cookies file",
+    "cookie file",
 )
 
 
-def classify_download_error(message: str, browser_id: str | None) -> tuple[str, dict[str, str]] | None:
+def classify_download_error(message: str, has_cookie_file: bool) -> tuple[str, dict[str, str]] | None:
     normalized = message.lower()
     if any(marker in normalized for marker in _AUTH_REQUIRED_MARKERS):
-        if browser_id:
-            return "error.youtube_session_failed", {"browser": browser_display_name(browser_id)}
+        if has_cookie_file:
+            return "error.youtube_session_expired", {}
         return "error.youtube_auth_required", {}
-    if browser_id and any(marker in normalized for marker in _COOKIE_FAILURE_MARKERS):
-        return "error.youtube_session_failed", {"browser": browser_display_name(browser_id)}
+    if has_cookie_file and any(marker in normalized for marker in _COOKIE_FAILURE_MARKERS):
+        return "error.youtube_session_expired", {}
     return None
 
 
@@ -244,10 +240,8 @@ def build_options(args: argparse.Namespace, job_token: str) -> dict[str, Any]:
     }
     if deno:
         options["js_runtimes"] = {"deno": {"path": str(deno)}}
-    if args.browser:
-        # Read the current browser session directly. No exported cookie file is
-        # written by Clipify, so the browser remains the source of truth.
-        options["cookiesfrombrowser"] = (args.browser, None, None, None)
+    if args.cookies_file:
+        options["cookiefile"] = str(Path(args.cookies_file).resolve())
 
     if args.start is not None or args.end is not None:
         start = args.start if args.start is not None else 0.0
@@ -265,7 +259,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--start", type=float)
     parser.add_argument("--end", type=float)
     parser.add_argument("--exact", action="store_true")
-    parser.add_argument("--browser", choices=SUPPORTED_BROWSER_IDS)
+    parser.add_argument("--cookies-file")
     parser.add_argument("--event-file")
     return parser.parse_args(argv)
 
@@ -283,8 +277,8 @@ def worker_main(argv: list[str]) -> int:
         LOGGER.info("Запущен загрузчик; папка: %s", output_dir)
         emit("status", key="status.checking_tools")
         options = build_options(args, job_token)
-        if args.browser:
-            emit("status", key="status.reading_browser_session", browser=browser_display_name(args.browser))
+        if args.cookies_file:
+            emit("status", key="status.reading_cookie_file")
         emit("status", key="status.fetching_info")
         with YoutubeDL(options) as ydl:
             info = ydl.extract_info(args.url, download=True)
@@ -299,7 +293,7 @@ def worker_main(argv: list[str]) -> int:
     except DownloadError as exc:
         LOGGER.exception("Ошибка загрузки или сети")
         message = str(exc).removeprefix("ERROR: ")
-        classified = classify_download_error(message, args.browser)
+        classified = classify_download_error(message, bool(args.cookies_file))
         if classified:
             key, values = classified
             emit("error", key=key, **values)

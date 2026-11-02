@@ -11,9 +11,10 @@ No installation is needed. Run “Clipify” from this folder.
 3. Choose a folder, or leave it blank to save next to the app.
 4. Select “Download video”.
 
-If YouTube asks for verification, sign in to YouTube in your browser and select
-that browser under “YouTube session”. Clipify remembers the choice and uses the
-browser's current session automatically. It never stores your password.
+If YouTube asks for verification, select “Sign in” in Clipify and complete the
+normal Google sign-in in the separate browser window. Clipify saves YouTube-only
+cookies to clipify-youtube-cookies.txt beside the app and reuses them automatically.
+Keep that file private. Clipify never stores your password.
 
 Use “Frame-accurate cut” when exact boundaries matter. Processing will take
 longer and use more CPU.
@@ -44,9 +45,10 @@ keeps the previous download unchanged.
 3. Выберите папку или оставьте поле пустым, чтобы сохранить рядом с программой.
 4. Нажмите «Скачать видео».
 
-Если YouTube запрашивает подтверждение, войдите в YouTube в браузере и выберите
-этот браузер в поле «Вход YouTube». Clipify запомнит выбор и будет автоматически
-использовать актуальную сессию браузера. Пароль программа не хранит.
+Если YouTube запрашивает подтверждение, нажмите «Войти» в Clipify и выполните
+обычный вход Google в отдельном окне браузера. Clipify сохранит cookies YouTube
+в clipify-youtube-cookies.txt рядом с программой и будет использовать их
+автоматически. Не передавайте этот файл другим людям. Пароль программа не хранит.
 
 Включите «Точные границы кадра», если важен точный момент обрезки. Обработка
 займёт больше времени и сильнее нагрузит процессор.

@@ -1,6 +1,8 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.pytest-auth-temp/
+.auth-cdp-smoke/
 .venv/
 .env
 .env.*
@@ -17,6 +19,8 @@ tools/deno*
 *.log
 clipify-settings.json
 clipify-settings.json.tmp
+clipify-youtube-cookies.txt
+clipify-youtube-cookies.txt.tmp
 *.pem
 *.key
 *.p12
